@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import torchvision.models as models
 
 class Model(nn.Module):
-    def __init__(self, backbone_dim, out_dim = 128, num_classes=10, backbone='resnet18',  pretrained=False,   num_layers_cls=2,  ):
+    def __init__(self, backbone_dim=2048, out_dim = 128, num_classes=10, backbone='resnet18',  pretrained=False,   num_layers_cls=2,  ):
         super(Model, self).__init__()
         self.backbone_dim = backbone_dim
         self.out_dim = out_dim

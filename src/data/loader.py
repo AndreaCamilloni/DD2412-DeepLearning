@@ -27,15 +27,28 @@ class ImageDataset(Dataset):
 
         return image, label
 
+
+class ImageFolderWithIndices(datasets.ImageFolder):
+    def __getitem__(self, index):
+        # this is what ImageFolder normally returns
+        original_tuple = super(ImageFolderWithIndices, self).__getitem__(index)
+        # make a new tuple that includes original and the index
+        tuple_with_path = (original_tuple + (index,))
+        return tuple_with_path
+
 # Augmentation returning 2 augmented images
 class Augmentation:
     def __init__(self, transform):
         self.transform = transform
+    
 
     def __call__(self, x):
-        x1 = self.transform(x)
-        x2 = self.transform(x)
-        return x1, x2
+        out = list()
+        out.append(self.transform(x))
+        out.append(self.transform(x))
+        #x1 = self.transform(x)
+        #x2 = self.transform(x)
+        return out
 
 # Random Transformation
 def get_transform():

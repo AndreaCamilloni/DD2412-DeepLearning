@@ -14,6 +14,7 @@ import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 import torch.optim as optim
+from torchvision import transforms, datasets
 
 import torch.multiprocessing as mp
 import torch.utils.data
@@ -21,10 +22,13 @@ import torch.utils.data.distributed
 import torchvision.models as torchvision_models
 import numpy as np
 
+#from torch import cifar10
 
-from model import Model, Loss
-from utils import *
-from data import loader
+
+from model.model import Model
+from model.loss import Loss
+from utils.utils import *
+from data.loader import *
 
 
 
@@ -55,6 +59,10 @@ def parse_args():
     parser.add_argument('--resume', type=bool, default=False, help='resume')
     parser.add_argument('--resume_path', type=str, default='results', help='path to resume')
     parser.add_argument('--resume_epoch', type=int, default=0, help='resume epoch')
+    #step size for step lr
+    parser.add_argument('--step_size', type=int, default=10, help='step size for cosine annealing')
+    #gamma for step lr
+    parser.add_argument('--gamma', type=float, default=0.1, help='gamma for step lr')
 
     args = parser.parse_args()
     return args
@@ -67,6 +75,9 @@ def main():
     # Set seed
     set_seed(args.seed)
 
+    
+    
+    train_dataset = datasets.CIFAR10(root=args.data_path, train=True, download=True)
     # Load dataset
     train_loader = get_dataset(args)
 
@@ -99,10 +110,15 @@ def set_seed(seed):
 
 def get_dataset(args):
     
+   
     # data loading code
     traindir = os.path.join(args.data, 'train')
     transform = loader.Augmentation(loader.get_transform())
     dataset = loader.ImageFolderWithIndices(traindir, transform=transform)
+    #import cifar10
+    #train_dataset = cifar10.CIFAR10(root=args.data_path, train=True, download=True, transform=transform)
+    #train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+
     train_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     #test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 

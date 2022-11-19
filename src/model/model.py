@@ -93,7 +93,7 @@ class Model(nn.Module):
 
 class MLPhead(nn.Module):
     def __init__(self, input_size, output_size, num_hidden_layers=2, hidden_size=256, activation='relu', batch_norm=False):
-        super(self).__init__()
+        super().__init__()
         
         if num_hidden_layers == 0:
             self.mlp = nn.Linear(input_size, output_size)

@@ -1,3 +1,4 @@
 [submodule "self-classifier"]
 	path = self-classifier
 	url = https://github.com/elad-amrani/self-classifier.git
+	ignore = dirty

@@ -43,13 +43,13 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18')
 #                   help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=800, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--warmup-epochs', default=10, type=int,
-                    help='linear warmup epochs (default: 10)')
+parser.add_argument('--warmup-epochs', default=5, type=int,
+                    help='linear warmup epochs (default: 5)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=16, type=int,
                     metavar='N',
-                    help='mini-batch size (default: 256), this is the total '
+                    help='mini-batch size (default: 16), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
 parser.add_argument('--lr', '--learning-rate', default=4.8, type=float,
@@ -91,7 +91,7 @@ parser.add_argument('--gpu', default=0, type=int,
 #                         'fastest way to use PyTorch for either single node or '
 #                         'multi node data parallel training')
 parser.add_argument('--cls-size', type=int, default=[5], nargs='+',
-                    help='size of classification layer. can be a list if cls-size > 1')
+                    help='number of classes')
 parser.add_argument('--num-cls', default=1, type=int, metavar='NCLS',
                     help='number of classification layers')
 parser.add_argument('--save-path', default='./saved/', type=str,
@@ -106,7 +106,7 @@ parser.add_argument('--dim', default=128, type=int, metavar='DIM',
                     help='size of MLP embedding layer')
 parser.add_argument('--hidden-dim', default=2048, type=int, metavar='HDIM',
                     help='size of MLP hidden layer')
-parser.add_argument('--num-hidden', default=3, type=int,
+parser.add_argument('--num-hidden', default=1, type=int,
                     help='number of MLP hidden layers')
 parser.add_argument('--row-tau', default=0.1, type=float,
                     help='row softmax temperature (default: 0.1)')
@@ -119,7 +119,7 @@ parser.add_argument('--use-amp', action='store_true',
 #parser.add_argument('--use-lsf-env', action='store_true',
 #                    help='use LSF env variables')
 parser.add_argument('--use-bn', action='store_true',
-                    help='use batch normalization layers in MLP')
+                    help='use batch normalization layers in MLP', default=True)
 #parser.add_argument('--fixed-cls', action='store_true',
 #                    help='use a fixed classifier')
 parser.add_argument('--global-crops-scale', type=float, nargs='+', default=(0.4, 1.),
@@ -154,7 +154,7 @@ parser.add_argument('--subset', default=None, type=str,
 #parser.add_argument('--no-leaky', action='store_true',
 #                    help='use regular relu layers instead of leaky relu in MLP', default=False)
 parser.add_argument('--activation', action='store_true',
-                    help='relu or leaky-relu in MLP layers', default='relu')
+                    help='relu or leaky_relu in MLP layers', default='leaky_relu')
 
 parser.add_argument("--wandb", default=None, help="Specify project name to log using WandB")
 
@@ -204,7 +204,7 @@ def main_worker(gpu,args):
                   num_classes=args.cls_size,
                   #num_cls=args.num_cls,
                   num_layers_cls=args.num_hidden,
-                  #use_bn=args.use_bn,
+                  use_bn=args.use_bn,
                   #backbone_dim=backbone_dim,
                   #fixed_cls=args.fixed_cls,
                   activation_cls=args.activation,
@@ -215,7 +215,7 @@ def main_worker(gpu,args):
     print(model)
 
     # nearest neighbor queue
-    nn_queue = utils.NNQueue(args.queue_len, args.dim, args.gpu)
+    #nn_queue = utils.NNQueue(args.queue_len, args.dim, args.gpu)
 
     if args.gpu is not None:
         print('-------GPU working---------')
@@ -265,7 +265,7 @@ def main_worker(gpu,args):
     for epoch in range(args.start_epoch, args.epochs):
 
         # train for one epoch
-        loss_i, acc1 = train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, epoch, args)
+        loss_i, acc1 = train(loader, model, None, scaler, criterion, optimizer, lr_schedule, epoch, args)
         
         if args.wandb:
             wandb.log({"Train Loss": loss_i, "Train Acc": acc1})
@@ -284,7 +284,7 @@ def main_worker(gpu,args):
             'arch': args.arch,
             'state_dict': model.state_dict(),
             'best_loss': best_loss,
-            'nn_queue': nn_queue,
+            #'nn_queue': None,
             'optimizer': optimizer.state_dict(),
         }, is_best=is_best, is_milestone=(epoch + 1) % 25 == 0,
             filename=os.path.join(args.save_path, 'model_last.pth.tar'))
@@ -308,9 +308,9 @@ def train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, ep
         # measure data loading time
         data_time.update(time.time() - end)
 
-        if args.cos:
+        #if args.cos:
             # update learning rate
-            adjust_lr(optimizer, lr_schedule, iteration=epoch * len(loader) + i)
+        adjust_lr(optimizer, lr_schedule, iteration=epoch * len(loader) + i)
 
         optimizer.zero_grad()
 
@@ -325,20 +325,20 @@ def train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, ep
             embds = model(images, return_embds=True)
 
             # view1 embeddings
-            embds1 = embds[0].clone().detach()
+            #embds1 = embds[0].clone().detach()
 
-            if nn_queue.full:
+            #if nn_queue.full:
                 #if not args.no_nn_aug:  # if queue is full and nn is enabled, replace view1 with view1-nn
                 #    embds[0], nn_targets = nn_queue.get_nn(embds1, indices)
                 #else:  # if nn augmentation is disabled do not replace, but use for monitoring progress
-                _, nn_targets = nn_queue.get_nn(embds1, indices)
+                #_, nn_targets = nn_queue.get_nn(embds1, indices)
 
                 # measure accuracy of nearest neighbor (for monitoring progress)
-                acc1 = (targets.view(-1, ) == nn_targets.view(-1, )).float().mean().view(1, ) * 100.0
+                #acc1 = (targets.view(-1, ) == nn_targets.view(-1, )).float().mean().view(1, ) * 100.0
                 # compute accuracy of all workers
                 #acc1 = utils.AllGather.apply(acc1).mean()
 
-                top1.update(acc1, targets.size(0))
+                #top1.update(acc1, targets.size(0))
 
             # gather embeddings, targets and indices from all workers
             #embds1 = utils.AllGather.apply(embds1)
@@ -346,7 +346,7 @@ def train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, ep
             #indices = utils.AllGather.apply(indices)
 
             # push embeddings of view1 (all workers) into queue
-            nn_queue.push(embds1, targets, indices)
+            #nn_queue.push(embds1, targets, indices)
 
             # compute probs
             probs = model(embds, return_embds=False)
@@ -354,32 +354,37 @@ def train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, ep
             with autocast(enabled=False):
                 # compute loss
                 #probs_ = [[tensor.to(dtype = torch.float32) for tensor in lists] for lists in probs]
-                probs_ = probs
-                loss = criterion(probs_)
+                #probs_ = probs
+                loss = criterion(probs)
             
                 #loss = criterion(probs)
 
         assert not torch.isnan(loss), 'loss is nan!'
-
+        
         
         # record loss
         #loss = loss.detach() #/ dist.get_world_size()
         #dist.all_reduce(loss)  # compute mean over all workers
-        losses.update(loss.item(), probs_[0][0].size(0))
+        losses.update(loss.item(), probs[0][0].size(0))
         
+        acc1 = accuracy(probs, targets)
+        top1.update(acc1, targets.size(0))
+
         #print("Require grad: ", loss.requires_grad)
         # compute gradient and do SGD step
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
+        if torch.cuda.is_available():#args.gpu is not None:
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            loss.backward()
+            optimizer.step()
 
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
 
-        #acc1 = accuracy(probs, targets)
-       
-        #top1.update(acc1, targets.size(0))
+
 
         if i % args.print_freq == args.print_freq - 1:
             progress.display(i)
@@ -441,10 +446,7 @@ def adjust_lr(optimizer, lr_schedule, iteration):
 
 
 def accuracy(output, target):
-    '''computing accuracy between a list of probabilites for each augmentation and batch with a list of target classes'''
-    output = output[0]
-    #output shape 8, 2, 5
-    #target shape 2, 1
+    #output = output[0]
     acc = 0
     for i in range(len(output)):
         acc += (output[i].argmax(dim=1) == target).float().mean()

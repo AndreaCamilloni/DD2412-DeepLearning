@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torchvision.models as models
 
 class Model(nn.Module):
-    def __init__(self, backbone_dim=512, hidden_dim = 4096, dim = 128, num_classes=10, backbone='resnet18',  pretrained=False,   num_layers_cls=2, activation_cls='relu'):
+    def __init__(self, backbone_dim=512, hidden_dim = 4096, dim = 128, num_classes=5, backbone='resnet18',  pretrained=False,   num_layers_cls=1, activation_cls='relu', use_bn = False):
         super(Model, self).__init__()
         #self.backbone_dim = backbone_dim
         self.hidden_dim = hidden_dim
@@ -19,6 +19,7 @@ class Model(nn.Module):
         self.num_classes = num_classes
         self.num_layers_cls = num_layers_cls
         self.activation_cls = activation_cls
+        self.use_bn = use_bn
         
         self.backbone = self._get_model()
         try:
@@ -30,7 +31,7 @@ class Model(nn.Module):
 
 
         # Classifier Head input_size, output_size, num_hidden_layers=2, hidden_size=256, activation='relu', batch_norm=False
-        self.classifier_head = MLPhead(input_size=self.backbone_dim, output_size = self.dim, num_hidden_layers=self.num_layers_cls, hidden_size=self.hidden_dim, activation=self.activation_cls, batch_norm=False)
+        self.classifier_head = MLPhead(input_size=self.backbone_dim, output_size = self.dim, num_hidden_layers=self.num_layers_cls, hidden_size=self.hidden_dim, activation=self.activation_cls, batch_norm=self.use_bn)
 
         # Classifier final layer    
         #print("Classifier final layer - input: ", self.dim)

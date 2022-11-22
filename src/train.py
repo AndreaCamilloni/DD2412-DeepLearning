@@ -1,5 +1,3 @@
-# Script for training the model
-
 import argparse
 import os
 import random
@@ -9,162 +7,449 @@ import warnings
 import utils
 import sys
 
+import wandb
+import yaml
+
 import torch
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
-import torch.optim as optim
-from torchvision import transforms, datasets
-
+import torch.optim
 import torch.multiprocessing as mp
 import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.models as torchvision_models
 import numpy as np
-
-#from torch import cifar10
-
+from torch.cuda.amp import GradScaler
+from torch.cuda.amp import autocast
+from apex import parallel
+from apex.parallel.LARC import LARC
 
 from model.model import Model
 from model.loss import Loss
-from utils.utils import *
-from data.loader import *
+from utils import utils
+#import vit as vits
 
+#torchvision_archs = sorted(name for name in torchvision_models.__dict__
+#    if name.islower() and not name.startswith("__")
+#    and callable(torchvision_models.__dict__[name]))
+#model_names = ['vit_tiny', 'vit_small', 'vit_base', 'deit_tiny', 'deit_small'] + torchvision_archs
 
+parser = argparse.ArgumentParser(description='PyTorch ImageNet Self-Supervised Training')
+parser.add_argument('data', metavar='DIR',
+                    help='path to dataset', default="./tiny_dataset")
+parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18')
+#parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
+#                   help='number of data loading workers (default: 4)')
+parser.add_argument('--epochs', default=800, type=int, metavar='N',
+                    help='number of total epochs to run')
+parser.add_argument('--warmup-epochs', default=10, type=int,
+                    help='linear warmup epochs (default: 10)')
+parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
+                    help='manual epoch number (useful on restarts)')
+parser.add_argument('-b', '--batch-size', default=16, type=int,
+                    metavar='N',
+                    help='mini-batch size (default: 256), this is the total '
+                         'batch size of all GPUs on the current node when '
+                         'using Data Parallel or Distributed Data Parallel')
+parser.add_argument('--lr', '--learning-rate', default=4.8, type=float,
+                    metavar='LR', help='initial learning rate', dest='lr')
+parser.add_argument('--start-warmup', default=0.3, type=float,
+                    help='initial warmup learning rate')
+parser.add_argument('--final-lr', default=0.0048, type=float,
+                    help='final learning rate (None for constant learning rate)')
+parser.add_argument('--cos', action='store_true',
+                    help='use cosine lr schedule', default=True)
+parser.add_argument('--sgd', action='store_true',
+                    help='use SGD optimizer', default=True)
+parser.add_argument('--lars', action='store_true',
+                    help='use LARS optimizer',default=True)
+parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
+                    help='momentum')
+parser.add_argument('--wd', '--weight-decay', default=1e-6, type=float,
+                    metavar='W', help='weight decay (default: 1e-6)',
+                    dest='weight_decay')
+parser.add_argument('-p', '--print-freq', default=16, type=int,
+                    metavar='N', help='print frequency (default: 16)')
+parser.add_argument('--resume', default='', type=str, metavar='PATH',
+                    help='path to latest checkpoint (default: none)')
+#parser.add_argument('--world-size', default=-1, type=int,
+#                    help='number of nodes for distributed training')
+#parser.add_argument('--rank', default=-1, type=int,
+#                    help='node rank for distributed training')
+#parser.add_argument('--dist-url', default='tcp://224.66.41.62:23456', type=str,
+#                    help='url used to set up distributed training')
+#parser.add_argument('--dist-backend', default='nccl', type=str,
+#                    help='distributed backend')
+parser.add_argument('--seed', default=0, type=int,
+                    help='seed for initializing training. ')
+parser.add_argument('--gpu', default=0, type=int,
+                    help='GPU id to use.')
+#parser.add_argument('--multiprocessing-distributed', action='store_true',
+#                    help='Use multi-processing distributed training to launch '
+#                         'N processes per node, which has N GPUs. This is the '
+#                         'fastest way to use PyTorch for either single node or '
+#                         'multi node data parallel training')
+parser.add_argument('--cls-size', type=int, default=[5], nargs='+',
+                    help='size of classification layer. can be a list if cls-size > 1')
+parser.add_argument('--num-cls', default=1, type=int, metavar='NCLS',
+                    help='number of classification layers')
+parser.add_argument('--save-path', default='./saved/', type=str,
+                    help='save path for checkpoints')
+parser.add_argument('--pretrained', default=None, type=str,
+                    help='path to pretrained checkpoint')
+#parser.add_argument('--rm-pretrained-cls', action='store_true',
+#                    help='ignore classifier when loading pretrained model (used for initializing imagenet subset)')
+parser.add_argument('--queue-len', default=262144, type=int,
+                    help='length of nearest neighbor queue')
+parser.add_argument('--dim', default=128, type=int, metavar='DIM',
+                    help='size of MLP embedding layer')
+parser.add_argument('--hidden-dim', default=2048, type=int, metavar='HDIM',
+                    help='size of MLP hidden layer')
+parser.add_argument('--num-hidden', default=3, type=int,
+                    help='number of MLP hidden layers')
+parser.add_argument('--row-tau', default=0.1, type=float,
+                    help='row softmax temperature (default: 0.1)')
+parser.add_argument('--col-tau', default=0.05, type=float,
+                    help='column softmax temperature (default: 0.05)')
+parser.add_argument('--use-amp', action='store_true',
+                    help='use automatic mixed precision')
+#parser.add_argument("--syncbn_process_group_size", default=0, type=int,
+#                    help='process group size for syncBN layer')
+#parser.add_argument('--use-lsf-env', action='store_true',
+#                    help='use LSF env variables')
+parser.add_argument('--use-bn', action='store_true',
+                    help='use batch normalization layers in MLP')
+#parser.add_argument('--fixed-cls', action='store_true',
+#                    help='use a fixed classifier')
+parser.add_argument('--global-crops-scale', type=float, nargs='+', default=(0.4, 1.),
+                    help="""Scale range of the cropped image before resizing, relatively to the origin image.
+                    Used for large global view cropping. When disabling multi-crop (--local_crops_number 0), we 
+                    recommand using a wider range of scale ("--global_crops_scale 0.14 1." for example)""")
+parser.add_argument('--local-crops-number', type=int, default=6,
+                    help="""Number of small local views to generate. 
+                    Set this parameter to 0 to disable multi-crop training. 
+                    When disabling multi-crop we recommend to use "--global_crops_scale 0.14 1." """)
+parser.add_argument('--local-crops-scale', type=float, nargs='+', default=(0.05, 0.4),
+                    help="""Scale range of the cropped image before resizing, relatively to the origin image. 
+                    Used for small local view cropping of multi-crop.""")
+parser.add_argument('--patch-size', default=16, type=int,
+                    help="""Size in pixels of input square patches - default 16 (for 16x16 patches). Using smaller 
+                    values leads to better performance but requires more memory. 
+                    Applies only for ViTs (vit_tiny, vit_small and vit_base). If <16, we recommend disabling 
+                    mixed precision training to avoid unstabilities.""")
+#parser.add_argument('--clip-grad', type=float, default=0.0,
+#                    help="""Maximal parameter gradient norm if using gradient clipping. Clipping with norm .3 ~ 1.0 can 
+#                    help optimization for larger ViT architectures. 0 for disabling.""")
+#parser.add_argument('--no-nn-aug', action='store_true',
+#                    help='do not use nearest neighbor augmentation')
+#parser.add_argument('--no-bias-wd', action='store_true',
+#                    help='do not regularize biases nor Norm parameters')
+#parser.add_argument('--bbone-wd', type=float, default=None,
+#                    help='backbone weight decay. if set to None weight_decay is used for backbone as well.')
+parser.add_argument('--eps', type=float, default=1e-8,
+                    help='small value to avoid division by zero and log(0)')
+parser.add_argument('--subset', default=None, type=str,
+                    help='path to imagenet subset txt file')
+#parser.add_argument('--no-leaky', action='store_true',
+#                    help='use regular relu layers instead of leaky relu in MLP', default=False)
+parser.add_argument('--activation', action='store_true',
+                    help='relu or leaky-relu in MLP layers', default='relu')
 
+parser.add_argument("--wandb", default=None, help="Specify project name to log using WandB")
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Self-supervised Classification')
-    parser.add_argument('--data_path', type=str, default='data', help='path to dataset')
-    parser.add_argument('--dataset', type=str, default='cifar10', help='dataset name')
-    parser.add_argument('--batch_size', type=int, default=128, help='batch size')
-    parser.add_argument('--num_workers', type=int, default=4, help='number of workers')
-    parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
-    parser.add_argument('--lr', type=float, default=0.1, help='learning rate')
-    parser.add_argument('--lr_schedule', type=str, default='cosine', help='learning rate schedule')
-    parser.add_argument('--lr_warmup_epochs', type=int, default=10, help='number of warmup epochs')
-    parser.add_argument('--weight_decay', type=float, default=1e-4, help='weight decay')
-    parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
-    parser.add_argument('--nesterov', type=bool, default=True, help='nesterov')
-    parser.add_argument('--model', type=str, default='resnet18', help='model name')
-    parser.add_argument('--num_views', type=int, default=2, help='number of views')
-    parser.add_argument('--num_hidden_layers', type=int, default=2, help='number of hidden layers')
-    parser.add_argument('--hidden_size', type=int, default=256, help='hidden size')
-    parser.add_argument('--activation', type=str, default='relu', help='activation function')
-    parser.add_argument('--batch_norm', type=bool, default=False, help='batch normalization')
-    parser.add_argument('--pretrained', type=bool, default=True, help='pretrained')
-    parser.add_argument('--seed', type=int, default=0, help='seed')
-    parser.add_argument('--save_path', type=str, default='results', help='path to save results')
-    parser.add_argument('--save_freq', type=int, default=10, help='save frequency')
-    parser.add_argument('--resume', type=bool, default=False, help='resume')
-    parser.add_argument('--resume_path', type=str, default='results', help='path to resume')
-    parser.add_argument('--resume_epoch', type=int, default=0, help='resume epoch')
-    #step size for step lr
-    parser.add_argument('--step_size', type=int, default=10, help='step size for cosine annealing')
-    #gamma for step lr
-    parser.add_argument('--gamma', type=float, default=0.1, help='gamma for step lr')
-
-    args = parser.parse_args()
-    return args
-
+def update_args(args, config_dict):
+    for key, val in config_dict.items():
+        setattr(args, key, val)
 
 def main():
-    args = parse_args()
-    print(args)
+    args = parser.parse_args()
 
-    # Set seed
-    set_seed(args.seed)
+    #if args.local_config is not None:
+        #with open(str(args.local_config), "r") as f:
+        #    config = yaml.safe_load(f)
+        #update_args(args, config)
+    if args.wandb:
+        wandb_config = vars(args)
+        run = wandb.init(project=str(args.wandb),entity="andreacamilloni", config=wandb_config)
+        #run = wandb.init(project=str(args.wandb), entity="self-classifier", config=wandb_config)
+        # update_args(args, dict(run.config))
+    #else:
+    #    warnings.warn("No config file was provided. Using default parameters.")    
 
+    # create output directory
+    os.makedirs(args.save_path, exist_ok=True)
+
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
+    np.random.seed(args.seed)
+    random.seed(args.seed)
+
+    #ngpus_per_node = torch.cuda.device_count()
+    main_worker(args.gpu, args)
+
+
+def main_worker(gpu,args):
+    args.gpu = gpu
+
+    #if args.arch in torchvision_models.__dict__.keys():
+    #    base_model = torchvision_models.__dict__[args.arch]()
+    #    backbone_dim = base_model.fc.weight.shape[1]
+    #else:
+    #    raise Exception("Unknown architecture: {}".format(args.arch))
+#self, /backbone_dim=512, /hidden_dim = 4096, /dim = 128, /num_classes=10, /backbone='resnet18',  /pretrained=False,  / num_layers_cls=2, /activation_cls='relu'
+    model = Model(backbone=args.arch,
+                  dim=args.dim,
+                  hidden_dim=args.hidden_dim,
+                  num_classes=args.cls_size,
+                  #num_cls=args.num_cls,
+                  num_layers_cls=args.num_hidden,
+                  #use_bn=args.use_bn,
+                  #backbone_dim=backbone_dim,
+                  #fixed_cls=args.fixed_cls,
+                  activation_cls=args.activation,
+                  #pretrained=args.pretrained,
+                  )
     
     
-    train_dataset = datasets.CIFAR10(root=args.data_path, train=True, download=True)
-    # Load dataset
-    train_loader = get_dataset(args)
+    print(model)
 
-    # Load model
-    model = Model()
+    # nearest neighbor queue
+    nn_queue = utils.NNQueue(args.queue_len, args.dim, args.gpu)
 
-    # Load optimizer
-    optimizer = get_optimizer(args, model)
+    if args.gpu is not None:
+        print('-------GPU working---------')
+        #torch.autograd.set_detect_anomaly(True)
+        torch.cuda.set_device('cuda:0')
+        # DataParallel will divide and allocate batch_size to all available GPUs
+        if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
+            model.features = torch.nn.DataParallel(model.features)
+            model.cuda()
+        else:
+            #model = model.cuda()   
+            model = torch.nn.DataParallel(model).cuda()
 
-    # Load scheduler
-    scheduler = get_scheduler(args, optimizer)
+    if args.sgd:
+        optimizer = torch.optim.SGD(model.parameters(), args.lr,
+                                    momentum=args.momentum,
+                                    weight_decay=args.weight_decay)
+    else:
+        optimizer = torch.optim.AdamW(model.parameters(), args.lr,
+                                      weight_decay=args.weight_decay)
 
-    # Load criterion
-    criterion = Loss()
 
-    # Train model
-    train(args, model, train_loader, optimizer, scheduler, criterion)
-
-    # Save model
-    save_model(args, model)
-
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-
-def get_dataset(args):
-    
-   
-    # data loading code
     traindir = os.path.join(args.data, 'train')
-    transform = loader.Augmentation(loader.get_transform())
-    dataset = loader.ImageFolderWithIndices(traindir, transform=transform)
-    #import cifar10
-    #train_dataset = cifar10.CIFAR10(root=args.data_path, train=True, download=True, transform=transform)
-    #train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-
-    train_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-    #test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
-
-    return train_loader
-def get_optimizer(args, model):
-    if args.optimizer == 'sgd':
-        optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-    elif args.optimizer == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    else:
-        raise NotImplementedError
-
-    return optimizer
-
-def get_scheduler(args, optimizer):
-    if args.scheduler == 'step':
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
-    elif args.scheduler == 'cosine':
-        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.t_max)
-    else:
-        raise NotImplementedError
-
-    return scheduler
-
-def train(args, model, train_loader,optimizer, scheduler, criterion):
+    transform = utils.DataAugmentation(args.global_crops_scale, args.local_crops_scale, args.local_crops_number)
+    dataset = utils.ImageFolderWithIndices(traindir, transform=transform)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
+    criterion = Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps).cuda() if torch.cuda.is_available() else Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps)
      
-    for epoch in range(args.epochs):
-        model.train()
-        for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.cuda(), target.cuda()
-            optimizer.zero_grad()
-            output = model(data)
-            loss = criterion(output, target)
-            loss.backward()
-            optimizer.step()
+    #if args.subset > 0:       
+    #    #sample a subset of the dataset for faster training
+    #    indices = np.random.choice(len(dataset), size=args.subset, replace=False)
+    #    data_subset = torch.utils.data.Subset(dataset, indices)
+    #    loader = torch.utils.data.DataLoader(data_subset, batch_size=args.batch_size, shuffle=True, drop_last=True)
 
-        scheduler.step()
+    #criterion = Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps).cuda()
+    
+    # schedulers
+    lr_schedule = utils.cosine_scheduler_with_warmup(base_value=args.lr,
+                                                     final_value=args.final_lr,
+                                                     epochs=args.epochs,
+                                                     niter_per_ep=len(loader),
+                                                     warmup_epochs=args.warmup_epochs,
+                                                     start_warmup_value=args.start_warmup)
 
-    # print loss and accuracy
-    print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, loss.item()))
+    scaler = GradScaler(enabled=args.use_amp, init_scale=2. ** 14)
+
+    for epoch in range(args.start_epoch, args.epochs):
+
+        # train for one epoch
+        loss_i, acc1 = train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, epoch, args)
+        
+        if args.wandb:
+            wandb.log({"Train Loss": loss_i, "Train Acc": acc1})
+        
+        print("##################################################")
+        print("train_loss: ", loss_i)
+        print("train_acc: ", acc1)
+        print("##################################################")
+        # remember best acc@1 and save checkpoint
+        is_best = True if epoch == 0 else loss_i < best_loss
+        best_loss = loss_i if epoch == 0 else min(loss_i, best_loss)
+
+        
+        save_checkpoint({
+            'epoch': epoch + 1,
+            'arch': args.arch,
+            'state_dict': model.state_dict(),
+            'best_loss': best_loss,
+            'nn_queue': nn_queue,
+            'optimizer': optimizer.state_dict(),
+        }, is_best=is_best, is_milestone=(epoch + 1) % 25 == 0,
+            filename=os.path.join(args.save_path, 'model_last.pth.tar'))
+
+def train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, epoch, args):
+    
+    batch_time = AverageMeter('Time', ':6.3f')
+    data_time = AverageMeter('Data', ':6.3f')
+    losses = AverageMeter('Loss', ':.4e')
+    top1 = AverageMeter('Acc@1', ':6.6f')
+    progress = ProgressMeter(
+        len(loader),
+        [batch_time, data_time, losses, top1],
+        prefix="Epoch: [{}]".format(epoch))
+
+    # switch to train mode
+    model.train()
+
+    end = time.time()
+    for i, (images, targets, indices) in enumerate(loader):
+        # measure data loading time
+        data_time.update(time.time() - end)
+
+        if args.cos:
+            # update learning rate
+            adjust_lr(optimizer, lr_schedule, iteration=epoch * len(loader) + i)
+
+        optimizer.zero_grad()
+
+        if torch.cuda.is_available():#args.gpu is not None:
+            images = [x.cuda(args.gpu, non_blocking=True) for x in images]
+            targets = targets.cuda(args.gpu, non_blocking=True)  # only used for monitoring progress, NOT for training
+            #print("targets..." , targets)
+            indices = indices.cuda(args.gpu, non_blocking=True)
+
+        with autocast(enabled=args.use_amp):
+            # compute embeddings
+            embds = model(images, return_embds=True)
+
+            # view1 embeddings
+            embds1 = embds[0].clone().detach()
+
+            if nn_queue.full:
+                #if not args.no_nn_aug:  # if queue is full and nn is enabled, replace view1 with view1-nn
+                #    embds[0], nn_targets = nn_queue.get_nn(embds1, indices)
+                #else:  # if nn augmentation is disabled do not replace, but use for monitoring progress
+                _, nn_targets = nn_queue.get_nn(embds1, indices)
+
+                # measure accuracy of nearest neighbor (for monitoring progress)
+                acc1 = (targets.view(-1, ) == nn_targets.view(-1, )).float().mean().view(1, ) * 100.0
+                # compute accuracy of all workers
+                #acc1 = utils.AllGather.apply(acc1).mean()
+
+                top1.update(acc1, targets.size(0))
+
+            # gather embeddings, targets and indices from all workers
+            #embds1 = utils.AllGather.apply(embds1)
+            #targets = utils.AllGather.apply(targets)
+            #indices = utils.AllGather.apply(indices)
+
+            # push embeddings of view1 (all workers) into queue
+            nn_queue.push(embds1, targets, indices)
+
+            # compute probs
+            probs = model(embds, return_embds=False)
+
+            with autocast(enabled=False):
+                # compute loss
+                #probs_ = [[tensor.to(dtype = torch.float32) for tensor in lists] for lists in probs]
+                probs_ = probs
+                loss = criterion(probs_)
+            
+                #loss = criterion(probs)
+
+        assert not torch.isnan(loss), 'loss is nan!'
+
+        
+        # record loss
+        #loss = loss.detach() #/ dist.get_world_size()
+        #dist.all_reduce(loss)  # compute mean over all workers
+        losses.update(loss.item(), probs_[0][0].size(0))
+        
+        #print("Require grad: ", loss.requires_grad)
+        # compute gradient and do SGD step
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        #acc1 = accuracy(probs, targets)
+       
+        #top1.update(acc1, targets.size(0))
+
+        if i % args.print_freq == args.print_freq - 1:
+            progress.display(i)
+
+    return losses.avg, top1.avg
 
 
-def save_model(args, model):
-    if not os.path.exists(args.save_path):
-        os.makedirs(args.save_path)
-    torch.save(model.state_dict(), os.path.join(args.save_path, 'model.pth'))
+def save_checkpoint(state, is_best, is_milestone, filename):
+    torch.save(state, filename)
+    if is_best:
+        shutil.copyfile(filename, os.path.join(os.path.split(filename)[0], 'model_best.pth.tar'))
+        print('Best model was saved.')
+    if is_milestone:
+        shutil.copyfile(filename, os.path.join(os.path.split(filename)[0], 'model_{}.pth.tar'.format(state['epoch'])))
+        print('Milestone {} model was saved.'.format(state['epoch']))
+
+
+class AverageMeter(object):
+    """Computes and stores the average and current value"""
+    def __init__(self, name, fmt=':f'):
+        self.name = name
+        self.fmt = fmt
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+    def __str__(self):
+        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
+        return fmtstr.format(**self.__dict__)
+
+
+class ProgressMeter(object):
+    def __init__(self, num_batches, meters, prefix=""):
+        self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
+        self.meters = meters
+        self.prefix = prefix
+
+    def display(self, batch):
+        entries = [self.prefix + self.batch_fmtstr.format(batch)]
+        entries += [str(meter) for meter in self.meters]
+        print('\t'.join(entries))
+
+    def _get_batch_fmtstr(self, num_batches):
+        num_digits = len(str(num_batches // 1))
+        fmt = '{:' + str(num_digits) + 'd}'
+        return '[' + fmt + '/' + fmt.format(num_batches) + ']'
+
+
+def adjust_lr(optimizer, lr_schedule, iteration):
+    for idx, param_group in enumerate(optimizer.param_groups):
+        param_group['lr'] = lr_schedule[iteration]
+
+
+def accuracy(output, target):
+    '''computing accuracy between a list of probabilites for each augmentation and batch with a list of target classes'''
+    output = output[0]
+    #output shape 8, 2, 5
+    #target shape 2, 1
+    acc = 0
+    for i in range(len(output)):
+        acc += (output[i].argmax(dim=1) == target).float().mean()
+
+    return acc / len(output)
 
 
 

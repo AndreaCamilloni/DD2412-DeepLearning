@@ -95,7 +95,7 @@ class Model(nn.Module):
 
         else:  # single view
             x = self.backbone(x)
-            x = self.mlp_head(x)
+            x = self.classifier_head(x)
 
             if return_embds:
                 return x
@@ -112,6 +112,8 @@ class MLPhead(nn.Module):
     def __init__(self, input_size, output_size, num_hidden_layers=2, hidden_size=256, activation='relu', batch_norm=False):
         super().__init__()
         
+        # we skipped one case (no hidden layers)
+
         if num_hidden_layers == 0:
             self.mlp = nn.Linear(input_size, output_size)
         else:

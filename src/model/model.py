@@ -115,6 +115,8 @@ class MLPhead(nn.Module):
         # we skipped one case (no hidden layers)
 
         if num_hidden_layers == 0:
+            self.mlp = nn.Identity()
+        elif num_hidden_layers == 1:
             self.mlp = nn.Linear(input_size, output_size)
         else:
             layers = [nn.Linear(input_size, hidden_size)]

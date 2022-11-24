@@ -1,0 +1,75 @@
+{
+    "os": "Linux-4.19.0-22-cloud-amd64-x86_64-with-debian-10.13",
+    "python": "3.7.12",
+    "heartbeatAt": "2022-11-24T13:09:07.029668",
+    "startedAt": "2022-11-24T13:09:04.652286",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "cifar10/cifar10",
+        "--epochs",
+        "100",
+        "--hidden-dim",
+        "4096",
+        "--dim",
+        "128",
+        "--batch-size",
+        "32",
+        "--cls-size",
+        "10",
+        "--cos",
+        "--sgd",
+        "--lars",
+        "--use-bn",
+        "--wandb",
+        "self-classifier",
+        "--num-hidden",
+        "1",
+        "--activation",
+        "leaky-relu",
+        "--save-path",
+        "./saved/cifar10/",
+        "--subset",
+        "10000"
+    ],
+    "state": "running",
+    "program": "train.py",
+    "codePath": "train.py",
+    "host": "deeplearning-1-vm",
+    "username": "andreacamilloni99",
+    "executable": "/opt/conda/bin/python",
+    "cpu_count": 1,
+    "cpu_count_logical": 2,
+    "cpu_freq": {
+        "current": 2000.14,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2000.14,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2000.14,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "total": 196.61751174926758,
+        "used": 39.41957092285156
+    },
+    "gpu": "Tesla T4",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "Tesla T4",
+            "memory_total": 16106127360
+        }
+    ],
+    "memory": {
+        "total": 12.71298599243164
+    }
+}

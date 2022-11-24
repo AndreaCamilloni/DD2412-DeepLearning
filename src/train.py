@@ -149,8 +149,8 @@ parser.add_argument('--local-crops-scale', type=float, nargs='+', default=(0.05,
 #                    help='backbone weight decay. if set to None weight_decay is used for backbone as well.')
 parser.add_argument('--eps', type=float, default=1e-8,
                     help='small value to avoid division by zero and log(0)')
-parser.add_argument('--subset', default=None, type=str,
-                    help='path to imagenet subset txt file')
+parser.add_argument('--subset', default=0, type=int,
+                    help='subset size')
 #parser.add_argument('--no-leaky', action='store_true',
 #                    help='use regular relu layers instead of leaky relu in MLP', default=False)
 parser.add_argument('--activation', type=str,
@@ -241,9 +241,15 @@ def main_worker(gpu,args):
     transform = utils.DataAugmentation(args.global_crops_scale, args.local_crops_scale, args.local_crops_number)
     dataset = utils.ImageFolderWithIndices(traindir, transform=transform)
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
-    criterion = Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps).cuda() if torch.cuda.is_available() else Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps)
 
-    #TODO:  subset of imagenet 
+    #Train with subset of data
+    if args.subset > 0:       
+        idxs = np.random.choice(len(dataset), size=args.subset, replace=False)
+        subset = torch.utils.data.Subset(dataset, idxs)
+        loader = torch.utils.data.DataLoader(subset, batch_size=args.batch_size, shuffle=True, drop_last=True)
+
+
+    criterion = Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps).cuda() if torch.cuda.is_available() else Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps)
        
       
     # schedulers

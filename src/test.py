@@ -45,8 +45,6 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     help='model architecture: ' +
                          ' | '.join(model_names) +
                          ' (default: resnet50)')
-parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
-                    help='number of data loading workers (default: 4)')
 parser.add_argument('-b', '--batch-size', default=16, type=int,
                     metavar='N',
                     help='mini-batch size (default: 256), this is the total '
@@ -61,9 +59,7 @@ parser.add_argument('--save-path', default='../saved/', type=str,
 parser.add_argument('--pretrained', default='../savedmodel_best.pth.tar', type=str,
                     help='path to pretrained checkpoint')
 parser.add_argument('--cls-size', type=int, default=[10], nargs='+',
-                    help='size of classification layer. can be a list if cls-size > 1')
-parser.add_argument('--num-cls', default=1, type=int, metavar='NCLS',
-                    help='number of classification layers')
+                    help='size of classification layer - ')
 parser.add_argument('--dim', default=128, type=int, metavar='DIM',
                     help='size of MLP embedding layer')
 parser.add_argument('--hidden-dim', default=4096, type=int, metavar='HDIM',
@@ -76,7 +72,7 @@ parser.add_argument('--use-bn', action='store_true',
                     help='use batch normalization layers in MLP')
 parser.add_argument('--num-classes', default=10, type=int,
                     help='number of low entropy classes to visualize')
-parser.add_argument('--num-samples-per-class', default=9, type=int,
+parser.add_argument('--num-samples-per-class', default=4, type=int,
                     help='number of samples per class to visualize (must be a square number)')
 parser.add_argument('--cls-num', default=0, type=int,
                     help='index of classifier head to use (default: 0)')  # best SCAN head is 4.
@@ -245,7 +241,7 @@ def main():
     
     superclass_mapping = None
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False,
-                                             num_workers=args.workers, pin_memory=True)
+                                             pin_memory=True)
 
     # run inference
     targets, preds = validate(val_loader, model, args)
@@ -267,15 +263,16 @@ def main():
         print("preds", preds)
         print("np.where(preds == label_i)", np.where(preds == label_i))
         sample_indices = np.where(preds == label_i)[0]
-        break
+        print('sample_indices', sample_indices)
         # sample randomly num_samples_per_class
         np.random.seed(0)
         subset_sample_indices = np.random.choice(sample_indices, args.num_samples_per_class, replace=False)
         true_pos = targets[subset_sample_indices] == reassignment[label_i]
-
+        print("subset_sample_indices", subset_sample_indices)
         # get image paths
         subset_img_paths = [val_loader.dataset.imgs[idx][0] for idx in subset_sample_indices]
 
+        print("subset_img_paths", subset_img_paths)
         # get images
         subset_images = [load_image(x) for x in subset_img_paths]
 
@@ -432,6 +429,9 @@ def load_image(infilename):
 
 
 def image_grid(imgs, rows, cols, label, eps=15, border=3):
+    print("rows: ", rows)
+    print("cols: ", cols)
+    print("len imgs: ", len(imgs))
     assert len(imgs) == rows * cols
 
     w, h = imgs[0].size

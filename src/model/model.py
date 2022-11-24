@@ -36,7 +36,7 @@ class Model(nn.Module):
         # Classifier final layer    
         #print("Classifier final layer - input: ", self.dim)
         #print("Classifier final layer - output: ", self.num_classes[0])
-        classifier_final_layer = nn.utils.weight_norm(nn.Linear(dim, self.num_classes[0], bias=False))
+        classifier_final_layer = nn.utils.weight_norm(nn.Linear(dim, self.num_classes, bias=False))
         classifier_final_layer.weight_g.data.fill_(1.0)
         self.classifier_final = classifier_final_layer
         #setattr(self, 'classifier_final', classifier_final_layer)

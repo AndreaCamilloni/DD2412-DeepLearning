@@ -37,7 +37,7 @@ from utils import utils
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Self-Supervised Training')
 parser.add_argument('data', metavar='DIR',
-                    help='path to dataset', default="./imagenet200")
+                    help='path to dataset', default="./cifar10")
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18')
 #parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
 #                   help='number of data loading workers (default: 4)')
@@ -90,7 +90,7 @@ parser.add_argument('--gpu', default=0, type=int,
 #                         'N processes per node, which has N GPUs. This is the '
 #                         'fastest way to use PyTorch for either single node or '
 #                         'multi node data parallel training')
-parser.add_argument('--cls-size', type=int, default=[200], nargs='+',
+parser.add_argument('--cls-size', type=int, default=10,
                     help='number of classes')
 #parser.add_argument('--num-cls', default=1, type=int, metavar='NCLS',
 #                    help='number of classification layers')

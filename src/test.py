@@ -58,8 +58,8 @@ parser.add_argument('--save-path', default='../saved/', type=str,
                     help='save path for checkpoints')
 parser.add_argument('--pretrained', default='../savedmodel_best.pth.tar', type=str,
                     help='path to pretrained checkpoint')
-parser.add_argument('--cls-size', type=int, default=[10], nargs='+',
-                    help='size of classification layer - ')
+parser.add_argument('--cls-size', type=int, default=10,
+                    help='size of classification layer')
 parser.add_argument('--dim', default=128, type=int, metavar='DIM',
                     help='size of MLP embedding layer')
 parser.add_argument('--hidden-dim', default=4096, type=int, metavar='HDIM',
@@ -245,8 +245,6 @@ def main():
 
     # run inference
     targets, preds = validate(val_loader, model, args)
-    print("targets: ", targets)
-    print("preds: ", preds)
     # compute metrics
     max_acc_classes, acc_per_class, num_samples_per_class, reassignment = \
         compute_metrics(targets, preds, args.num_samples_per_class, superclass_mapping)
@@ -259,20 +257,16 @@ def main():
     # sample num_samples_per_class from low entropy classes and save grid image
     for idx_label_i, label_i in enumerate(max_acc_classes):
         # extract all indices of current class
-        print('label_i', label_i)
-        print("preds", preds)
-        print("np.where(preds == label_i)", np.where(preds == label_i))
         sample_indices = np.where(preds == label_i)[0]
-        print('sample_indices', sample_indices)
         # sample randomly num_samples_per_class
         np.random.seed(0)
         subset_sample_indices = np.random.choice(sample_indices, args.num_samples_per_class, replace=False)
         true_pos = targets[subset_sample_indices] == reassignment[label_i]
-        print("subset_sample_indices", subset_sample_indices)
+        #print("subset_sample_indices", subset_sample_indices)
         # get image paths
         subset_img_paths = [val_loader.dataset.imgs[idx][0] for idx in subset_sample_indices]
 
-        print("subset_img_paths", subset_img_paths)
+        #print("subset_img_paths", subset_img_paths)
         # get images
         subset_images = [load_image(x) for x in subset_img_paths]
 

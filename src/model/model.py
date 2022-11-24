@@ -13,7 +13,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
         #self.backbone_dim = backbone_dim
         self.hidden_dim = hidden_dim
-        self.dim = dim 
+        self.dim = dim if num_layers_cls > 0 else backbone_dim
         self.backbone = backbone
         self.pretrained = pretrained
         self.num_classes = num_classes
@@ -65,7 +65,7 @@ class Model(nn.Module):
     #    return x
 
 
-    def forward(self, x, cls_num=None, return_embds=False):
+    def forward(self, x, return_embds=False):
         if isinstance(x, list):  # multiple views
             bs_size = x[0].shape[0]
             #print("bs_size: ", bs_size)

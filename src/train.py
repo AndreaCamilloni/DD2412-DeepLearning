@@ -13,34 +13,29 @@ import yaml
 import torch
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
-import torch.distributed as dist
+#import torch.distributed as dist
 import torch.optim
-import torch.multiprocessing as mp
+#import torch.multiprocessing as mp
 import torch.utils.data
 import torch.utils.data.distributed
-import torchvision.models as torchvision_models
+#import torchvision.models as torchvision_models
 import numpy as np
 from torch.cuda.amp import GradScaler
 from torch.cuda.amp import autocast
-from apex import parallel
+#from apex import parallel
 from apex.parallel.LARC import LARC
 
 from model.model import Model
 from model.loss import Loss
-from utils import utils
-#import vit as vits
+from utils import utils 
 
-#torchvision_archs = sorted(name for name in torchvision_models.__dict__
-#    if name.islower() and not name.startswith("__")
-#    and callable(torchvision_models.__dict__[name]))
-#model_names = ['vit_tiny', 'vit_small', 'vit_base', 'deit_tiny', 'deit_small'] + torchvision_archs
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Self-Supervised Training')
-parser.add_argument('data', metavar='DIR',
+parser.add_argument('--config', type=str,
+                    help='path to config file', default="./config-files/train100ep.yaml")
+parser.add_argument('--data', metavar='DIR',
                     help='path to dataset', default="./cifar10")
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18')
-#parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
-#                   help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=800, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--warmup-epochs', default=10, type=int,
@@ -73,33 +68,16 @@ parser.add_argument('-p', '--print-freq', default=16, type=int,
                     metavar='N', help='print frequency (default: 16)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
-#parser.add_argument('--world-size', default=-1, type=int,
-#                    help='number of nodes for distributed training')
-#parser.add_argument('--rank', default=-1, type=int,
-#                    help='node rank for distributed training')
-#parser.add_argument('--dist-url', default='tcp://224.66.41.62:23456', type=str,
-#                    help='url used to set up distributed training')
-#parser.add_argument('--dist-backend', default='nccl', type=str,
-#                    help='distributed backend')
 parser.add_argument('--seed', default=0, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--gpu', default=0, type=int,
                     help='GPU id to use.')
-#parser.add_argument('--multiprocessing-distributed', action='store_true',
-#                    help='Use multi-processing distributed training to launch '
-#                         'N processes per node, which has N GPUs. This is the '
-#                         'fastest way to use PyTorch for either single node or '
-#                         'multi node data parallel training')
 parser.add_argument('--cls-size', type=int, default=10,
                     help='number of classes')
-#parser.add_argument('--num-cls', default=1, type=int, metavar='NCLS',
-#                    help='number of classification layers')
 parser.add_argument('--save-path', default='./saved/', type=str,
                     help='save path for checkpoints')
 parser.add_argument('--pretrained', default=None, type=str,
                     help='path to pretrained checkpoint')
-#parser.add_argument('--rm-pretrained-cls', action='store_true',
-#                    help='ignore classifier when loading pretrained model (used for initializing imagenet subset)')
 parser.add_argument('--queue-len', default=100, type=int,
                     help='length of nearest neighbor queue')
 parser.add_argument('--dim', default=128, type=int, metavar='DIM',
@@ -114,14 +92,8 @@ parser.add_argument('--col-tau', default=0.05, type=float,
                     help='column softmax temperature (default: 0.05)')
 parser.add_argument('--use-amp', action='store_true',
                     help='use automatic mixed precision')
-#parser.add_argument("--syncbn_process_group_size", default=0, type=int,
-#                    help='process group size for syncBN layer')
-#parser.add_argument('--use-lsf-env', action='store_true',
-#                    help='use LSF env variables')
 parser.add_argument('--use-bn', action='store_true',
                     help='use batch normalization layers in MLP')
-#parser.add_argument('--fixed-cls', action='store_true',
-#                    help='use a fixed classifier')
 parser.add_argument('--global-crops-scale', type=float, nargs='+', default=(0.4, 1.),
                     help="""Scale range of the cropped image before resizing, relatively to the origin image.
                     Used for large global view cropping. When disabling multi-crop (--local_crops_number 0), we 
@@ -133,30 +105,15 @@ parser.add_argument('--local-crops-number', type=int, default=6,
 parser.add_argument('--local-crops-scale', type=float, nargs='+', default=(0.05, 0.4),
                     help="""Scale range of the cropped image before resizing, relatively to the origin image. 
                     Used for small local view cropping of multi-crop.""")
-#parser.add_argument('--patch-size', default=16, type=int,
-#                    help="""Size in pixels of input square patches - default 16 (for 16x16 patches). Using smaller 
-#                    values leads to better performance but requires more memory. 
-#                    Applies only for ViTs (vit_tiny, vit_small and vit_base). If <16, we recommend disabling 
-#                    mixed precision training to avoid unstabilities.""")
-#parser.add_argument('--clip-grad', type=float, default=0.0,
-#                    help="""Maximal parameter gradient norm if using gradient clipping. Clipping with norm .3 ~ 1.0 can 
-#                    help optimization for larger ViT architectures. 0 for disabling.""")
-#parser.add_argument('--no-nn-aug', action='store_true',
-#                    help='do not use nearest neighbor augmentation')
-#parser.add_argument('--no-bias-wd', action='store_true',
-#                    help='do not regularize biases nor Norm parameters')
-#parser.add_argument('--bbone-wd', type=float, default=None,
-#                    help='backbone weight decay. if set to None weight_decay is used for backbone as well.')
 parser.add_argument('--eps', type=float, default=1e-8,
                     help='small value to avoid division by zero and log(0)')
 parser.add_argument('--subset', default=0, type=int,
                     help='subset size')
-#parser.add_argument('--no-leaky', action='store_true',
-#                    help='use regular relu layers instead of leaky relu in MLP', default=False)
 parser.add_argument('--activation', type=str,
                     help='relu or leaky_relu in MLP layers', default='leaky_relu')
-
 parser.add_argument("--wandb", default=None, help="Specify project name to log using WandB")
+
+
 
 def update_args(args, config_dict):
     for key, val in config_dict.items():
@@ -165,20 +122,17 @@ def update_args(args, config_dict):
 def main():
     args = parser.parse_args()
 
-    # TODO: complete wandb integration
+    if args.config is not None:
+        with open(str(args.config), "r") as file:
+            # safe load
+            config = yaml.safe_load(file)
+ 
+        update_args(args, config)
+        if args.wandb:
+            _wandb = vars(args)
+            wandb.init(project=args.wandb, entity="andreacamilloni", config=_wandb)
+            # update_args(args, dict(run.config))
     
-    #if args.local_config is not None:
-        #with open(str(args.local_config), "r") as f:
-        #    config = yaml.safe_load(f)
-        #update_args(args, config)
-    if args.wandb:
-        wandb_config = vars(args)
-        run = wandb.init(project=str(args.wandb),entity="andreacamilloni", config=wandb_config)
-        #run = wandb.init(project=str(args.wandb), entity="self-classifier", config=wandb_config)
-        # update_args(args, dict(run.config))
-    #else:
-    #    warnings.warn("No config file was provided. Using default parameters.")    
-
     # create output directory
     os.makedirs(args.save_path, exist_ok=True)
 
@@ -198,11 +152,9 @@ def main_worker(gpu,args):
                   dim=args.dim,
                   hidden_dim=args.hidden_dim,
                   num_classes=args.cls_size,
-                  #num_cls=args.num_cls,
                   num_layers_cls=args.num_hidden,
                   use_bn=args.use_bn,
                   #backbone_dim=backbone_dim,
-                  #fixed_cls=args.fixed_cls,
                   activation_cls=args.activation,
                   #pretrained=args.pretrained,
                   )
@@ -214,9 +166,11 @@ def main_worker(gpu,args):
     nn_queue = utils.NNQueue(args.queue_len, args.dim, args.gpu)
 
     if args.gpu is not None:
-        print('-------GPU working---------')
+        print('-' * 150)
+        print(" " * 50, "Using GPU: {} for training".format(args.gpu))
+        print('-' * 150)
         #torch.autograd.set_detect_anomaly(True)
-        torch.cuda.set_device('cuda:0')
+        torch.cuda.set_device('cuda:0') 
         # DataParallel will divide and allocate batch_size to all available GPUs
         #if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
         #    model.features = torch.nn.DataParallel(model.features)
@@ -242,14 +196,18 @@ def main_worker(gpu,args):
     dataset = utils.ImageFolderWithIndices(traindir, transform=transform)
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
 
-    #Train with subset of data
+    #Train with subset of data 
     if args.subset > 0:       
+        # balanced subset of data 
+        #loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, sampler=utils.BalancedSubsetSampler(dataset, args.subset), drop_last=True)
         idxs = np.random.choice(len(dataset), size=args.subset, replace=False)
-        subset = torch.utils.data.Subset(dataset, idxs)
-        loader = torch.utils.data.DataLoader(subset, batch_size=args.batch_size, shuffle=True, drop_last=True)
+        _dataset = torch.utils.data.Subset(dataset, idxs)
+        loader = torch.utils.data.DataLoader(_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
 
-
-    criterion = Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps).cuda() if torch.cuda.is_available() else Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps)
+    if torch.cuda.is_available():
+        criterion = Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps).cuda()  
+    else:
+        criterion = Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps)
        
       
     # schedulers
@@ -318,7 +276,7 @@ def train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, ep
 
         optimizer.zero_grad()
 
-        if torch.cuda.is_available():#args.gpu is not None:
+        if torch.cuda.is_available():
             images = [x.cuda(args.gpu, non_blocking=True) for x in images]
             targets = targets.cuda(args.gpu, non_blocking=True)  # only used for monitoring progress, NOT for training
             indices = indices.cuda(args.gpu, non_blocking=True)
@@ -361,7 +319,7 @@ def train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, ep
         scaler.step(optimizer)
         scaler.update()
         
-        loss.detach()
+        loss.detach() 
         
         # measure elapsed time
         losses.update(loss.item(), probs[0][0].size(0))
@@ -375,6 +333,7 @@ def train(loader, model, nn_queue, scaler, criterion, optimizer, lr_schedule, ep
             progress.display(i)
 
     return losses.avg, top1.avg
+
 
 
 def save_checkpoint(state, is_best, is_milestone, filename):
@@ -428,8 +387,6 @@ class ProgressMeter(object):
 def adjust_lr(optimizer, lr_schedule, iteration):
     for idx, param_group in enumerate(optimizer.param_groups):
         param_group['lr'] = lr_schedule[iteration]
-
-
 
 
 

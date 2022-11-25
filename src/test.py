@@ -423,9 +423,6 @@ def load_image(infilename):
 
 
 def image_grid(imgs, rows, cols, label, eps=15, border=3):
-    print("rows: ", rows)
-    print("cols: ", cols)
-    print("len imgs: ", len(imgs))
     assert len(imgs) == rows * cols
 
     w, h = imgs[0].size

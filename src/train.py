@@ -32,7 +32,7 @@ from utils import utils
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Self-Supervised Training')
 parser.add_argument('--config', type=str,
-                    help='path to config file', default="./config-files/train100ep.yaml")
+                    help='path to config file', default="./configs/train100ep.yaml")
 parser.add_argument('--data', metavar='DIR',
                     help='path to dataset', default="./cifar10")
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18')

@@ -130,7 +130,7 @@ def main():
         update_args(args, config)
         if args.wandb:
             _wandb = vars(args)
-            wandb.init(project=args.wandb, entity="andreacamilloni", config=_wandb)
+            wandb.init(project=args.wandb, entity="selfclassifier", config=_wandb)
             # update_args(args, dict(run.config))
     
     # create output directory
@@ -198,11 +198,10 @@ def main_worker(gpu,args):
 
     #Train with subset of data 
     if args.subset > 0:       
-        # balanced subset of data 
-        #loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, sampler=utils.BalancedSubsetSampler(dataset, args.subset), drop_last=True)
         idxs = np.random.choice(len(dataset), size=args.subset, replace=False)
-        _dataset = torch.utils.data.Subset(dataset, idxs)
-        loader = torch.utils.data.DataLoader(_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
+        subset = torch.utils.data.Subset(dataset, idxs)
+        loader = torch.utils.data.DataLoader(subset, batch_size=args.batch_size, shuffle=True, drop_last=True)
+        
 
     if torch.cuda.is_available():
         criterion = Loss(row_tau=args.row_tau, col_tau=args.col_tau, eps=args.eps).cuda()  

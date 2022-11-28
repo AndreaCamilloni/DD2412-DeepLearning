@@ -4,8 +4,8 @@ arch: resnet18
 save-path: ./saved/cifar10/100epochs/
 cls-size: 10
 epochs: 100
-batch_size: 64
-subset: 0
+batch_size: 8
+subset: 1000
 gpu: 0
 use_bn: True
 sgd: True
@@ -14,8 +14,8 @@ activation: leaky-relu
 cos: True
 final_lr: 0.0048
 lr: 4.8
-queue_len: 1000
-wandb: self-classifier
+queue_len: 100
+wandb: group13
 dim: 128
 num_hidden: 1
 hidden-dim: 4096

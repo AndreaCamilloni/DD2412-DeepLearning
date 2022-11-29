@@ -140,16 +140,16 @@ def main():
         #              num_hidden=args.num_hidden,
         #              use_bn=args.use_bn,
         #              no_leaky=args.no_leaky)
-    elif args.model == 'scan' or args.model == 'sela':
-        model = models.__dict__[args.arch]()
-    elif args.model == 'barlowtwins':
-        model = torch.hub.load('facebookresearch/barlowtwins:main', 'resnet50')
-        model.fc = nn.Identity()
-    elif args.model == 'dino':
-        model = torch.hub.load('facebookresearch/dino:main', 'dino_resnet50')
-    else:
-        model = models.__dict__[args.arch]()
-        model.fc = nn.Identity()
+    #elif args.model == 'scan' or args.model == 'sela':
+    #    model = models.__dict__[args.arch]()
+    #elif args.model == 'barlowtwins':
+    #    model = torch.hub.load('facebookresearch/barlowtwins:main', 'resnet50')
+    #    model.fc = nn.Identity()
+    #elif args.model == 'dino':
+    #    model = torch.hub.load('facebookresearch/dino:main', 'dino_resnet50')
+    #else:
+    #    model = models.__dict__[args.arch]()
+    #    model.fc = nn.Identity()
     print(model)
 
     # load from pre-trained, before DistributedDataParallel constructor
@@ -159,51 +159,55 @@ def main():
             checkpoint = torch.load(args.pretrained, map_location="cpu") #map_location="cpu"??
 
             # load state dictionary
-            if args.model == 'scan':
-                state_dict = checkpoint['model']
-            elif args.model == 'swav':
-                state_dict = checkpoint
-            elif args.model == 'obow':
-                state_dict = checkpoint['network']
-            else:
-                state_dict = checkpoint['state_dict']
+        #    if args.model == 'scan':
+        #        state_dict = checkpoint['model']
+        #    elif args.model == 'swav':
+        #        state_dict = checkpoint
+        #    elif args.model == 'obow':
+        #        state_dict = checkpoint['network']
+        #    else:
+        #        state_dict = checkpoint['state_dict']
+            state_dict = checkpoint['state_dict']
 
             # remove module. prefix
             for k in list(state_dict.keys()):
 
-                if args.model == 'scan':
-                    if k.startswith('backbone.'):
-                        # remove prefix
-                        state_dict[k[len("backbone."):]] = state_dict[k]
-                        del state_dict[k]
-                    elif k.startswith('cluster_head.{}'.format(args.cls_num)):
-                        # remove prefix
-                        state_dict['fc.' + k[len("cluster_head.{}.".format(args.cls_num)):]] = state_dict[k]
-                        del state_dict[k]
-                    else:
-                        del state_dict[k]  # delete other heads
+                #if args.model == 'scan':
+                #    if k.startswith('backbone.'):
+                #        # remove prefix
+                #        state_dict[k[len("backbone."):]] = state_dict[k]
+                #        del state_dict[k]
+                #    elif k.startswith('cluster_head.{}'.format(args.cls_num)):
+                #        # remove prefix
+                #        state_dict['fc.' + k[len("cluster_head.{}.".format(args.cls_num)):]] = state_dict[k]
+                #        del state_dict[k]
+                #    else:
+                #        del state_dict[k]  # delete other heads
 
-                elif args.model == 'mocov2':
-                    if k.startswith('module.encoder_q') and not k.startswith('module.encoder_q.fc'):
-                        new_k = k[len('module.encoder_q.'):]
-                        state_dict[new_k] = state_dict[k]
-                        del state_dict[k]
+                #elif args.model == 'mocov2':
+                #    if k.startswith('module.encoder_q') and not k.startswith('module.encoder_q.fc'):
+                #        new_k = k[len('module.encoder_q.'):]
+                #        state_dict[new_k] = state_dict[k]
+                #        del state_dict[k]
 
-                elif args.model == 'swav':
-                    if k.startswith('module') and not k.startswith('module.projection_head'):
-                        new_k = k[len('module.'):]
-                        state_dict[new_k] = state_dict[k]
-                        del state_dict[k]
+                #elif args.model == 'swav':
+                #    if k.startswith('module') and not k.startswith('module.projection_head'):
+                #        new_k = k[len('module.'):]
+                #        state_dict[new_k] = state_dict[k]
+                #        del state_dict[k]
 
-                elif args.model == 'obow':
-                    if k.startswith('fc'):
-                        del state_dict[k]
+                #elif args.model == 'obow':
+                #    if k.startswith('fc'):
+                #        del state_dict[k]
 
-                elif args.model == 'self-classifier':
+                if args.model == 'self-classifier':
                     if k.startswith('module.'):
                         # remove prefix
                         state_dict[k[len("module."):]] = state_dict[k]
                         del state_dict[k]
+                else: 
+                    warnings.warn('Unknown model: {}'.format(args.model))
+                    sys.exit()
 
             args.start_epoch = 0
             msg = model.load_state_dict(state_dict, strict=False)
@@ -218,11 +222,13 @@ def main():
     else:
         print('=> using {} GPUs.'.format(torch.cuda.device_count()))
         # DataParallel will divide and allocate batch_size to all available GPUs
-        if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
-            model.features = torch.nn.DataParallel(model.features)
-            model.cuda()
-        else:
-            model = torch.nn.DataParallel(model).cuda()
+        #if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
+        #    model.features = torch.nn.DataParallel(model.features)
+        #    model.cuda()
+        #else:
+        #    model = torch.nn.DataParallel(model).cuda()
+        model = model.cuda()
+
 
     cudnn.benchmark = True
 

@@ -197,9 +197,18 @@ def main_worker(gpu,args):
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
 
     #Train with subset of data 
-    if args.subset > 0:       
-        idxs = np.random.choice(len(dataset), size=args.subset, replace=False)
-        subset = torch.utils.data.Subset(dataset, idxs)
+    if args.subset > 0: 
+        # generate random indices for each class in args.cls_size
+        # and then concatenate them to get a list of indices
+        # of length args.subset
+        # this is done to ensure that the subset is balanced
+        indices = []
+        for i in range(args.cls_size):
+            indices += random.sample(range(i*int(args.subset/args.cls_size), (i+1)*int(args.subset/args.cls_size)), int(args.subset/args.cls_size))
+            print("Class {} has {} samples".format(i, len(indices)))
+
+        #idxs = np.random.choice(len(dataset), size=args.subset, replace=False)
+        subset = torch.utils.data.Subset(dataset, indices)
         loader = torch.utils.data.DataLoader(subset, batch_size=args.batch_size, shuffle=True, drop_last=True)
         
 

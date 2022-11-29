@@ -1,11 +1,11 @@
 # Training configuration file - 100 epochs - CIFAR10 
 data: cifar10/cifar10
 arch: resnet18
-save-path: ./saved/cifar10/100epochs/
+save-path: ./saved/cifar10/100epochs/full-cifar10/
 cls-size: 10
 epochs: 100
-batch_size: 8
-subset: 1000
+batch_size: 64
+subset: 0
 gpu: 0
 use_bn: True
 sgd: True
@@ -14,8 +14,8 @@ activation: leaky-relu
 cos: True
 final_lr: 0.0048
 lr: 4.8
-queue_len: 100
-wandb: group13
+queue_len: 1000
+wandb: cifar10
 dim: 128
 num_hidden: 1
 hidden-dim: 4096

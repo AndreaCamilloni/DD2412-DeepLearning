@@ -8,6 +8,7 @@ import utils
 import sys
 import math
 import functools
+from utils import utils
 
 import torch
 import torch.nn as nn
@@ -33,24 +34,22 @@ print = functools.partial(print, flush=True)
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
-parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
+parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     choices=model_names,
                     help='model architecture: ' +
                         ' | '.join(model_names) +
-                        ' (default: resnet50)')
+                        ' (default: resnet18)')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=100, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=32, type=int,
                     metavar='N',
-                    help='mini-batch size (default: 256), this is the total '
-                         'batch size of all GPUs on the current node when '
-                         'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--val-batch-size', default=512, type=int,
-                    help='validation mini-batch size (default: 512)')
+                    help='batch size (default: 32)')
+parser.add_argument('--val-batch-size', default=64, type=int,
+                    help='validation mini-batch size (default: 64)')
 parser.add_argument('--lr', '--learning-rate', default=30., type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--cos', action='store_true',
@@ -82,14 +81,14 @@ parser.add_argument('--dist-backend', default='nccl', type=str,
                     help='distributed backend')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
-parser.add_argument('--gpu', default=None, type=int,
+parser.add_argument('--gpu', default=0, type=int,
                     help='GPU id to use.')
 parser.add_argument('--multiprocessing-distributed', action='store_true',
                     help='Use multi-processing distributed training to launch '
                          'N processes per node, which has N GPUs. This is the '
                          'fastest way to use PyTorch for either single node or '
                          'multi node data parallel training')
-parser.add_argument('--save-path', default='../saved/', type=str,
+parser.add_argument('--save-path', default='../saved/lincls/', type=str,
                     help='save path for checkpoints')
 parser.add_argument('--pretrained', default=None, type=str,
                     help='path to pretrained checkpoint')
@@ -116,56 +115,59 @@ def main():
                       'from checkpoints.')
 
     if args.gpu is not None:
-        warnings.warn('You have chosen a specific GPU. This will completely '
-                      'disable data parallelism.')
+        warnings.warn('You have chosen a specific GPU. This might slow down '
+                      'your training')  
 
     if args.dist_url == "env://" and args.world_size == -1:
         args.world_size = int(os.environ["WORLD_SIZE"])
+        
 
     # Slurm
-    args.is_slurm_job = "SLURM_JOB_ID" in os.environ
-    if args.is_slurm_job:
-        args.rank = int(os.environ["SLURM_PROCID"])
-        args.world_size = int(os.environ["SLURM_NNODES"]) * int(
-            os.environ["SLURM_TASKS_PER_NODE"][0]
-        )
-        args.gpu = args.rank % torch.cuda.device_count()
+    #args.is_slurm_job = "SLURM_JOB_ID" in os.environ
+    #if args.is_slurm_job:
+    #    args.rank = int(os.environ["SLURM_PROCID"])
+    #    args.world_size = int(os.environ["SLURM_NNODES"]) * int(
+    #        os.environ["SLURM_TASKS_PER_NODE"][0]
+    #    )
+    #    args.gpu = args.rank % torch.cuda.device_count()
 
-    args.distributed = args.world_size > 1 or args.multiprocessing_distributed
+    #args.distributed = args.world_size > 1 or args.multiprocessing_distributed
 
-    ngpus_per_node = torch.cuda.device_count()
-    if args.multiprocessing_distributed:
+    #ngpus_per_node = torch.cuda.device_count()
+    #if args.multiprocessing_distributed:
         # Since we have ngpus_per_node processes per node, the total world_size
         # needs to be adjusted accordingly
-        args.world_size = ngpus_per_node * args.world_size
+    #    args.world_size = ngpus_per_node * args.world_size
         # Use torch.multiprocessing.spawn to launch distributed processes: the
         # main_worker process function
-        mp.spawn(main_worker, nprocs=ngpus_per_node, args=(ngpus_per_node, args))
-    else:
+    #    mp.spawn(main_worker, nprocs=ngpus_per_node, args=(ngpus_per_node, args))
+    #else:
         # Simply call main_worker function
-        main_worker(args.gpu, ngpus_per_node, args)
+    #    main_worker(args.gpu, ngpus_per_node, args)
+    main_worker(args.gpu, args)
 
 
-def main_worker(gpu, ngpus_per_node, args):
+def main_worker(gpu, args, ngpus_per_node=None):
     global best_acc1
     args.gpu = gpu
 
     if args.gpu is not None:
         print("Use GPU: {} for training".format(args.gpu))
 
-    if args.distributed:
-        if args.dist_url == "env://" and args.rank == -1:
-            args.rank = int(os.environ["RANK"])
-        if args.multiprocessing_distributed:
+    #if args.distributed:
+    #    if args.dist_url == "env://" and args.rank == -1:
+    #        args.rank = int(os.environ["RANK"])
+    #    if args.multiprocessing_distributed:
             # For multiprocessing distributed training, rank needs to be the
             # global rank among all the processes
-            args.rank = args.rank * ngpus_per_node + gpu
-        dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
-                                world_size=args.world_size, rank=args.rank)
+    #        args.rank = args.rank * ngpus_per_node + gpu
+    #    dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
+    #                            world_size=args.world_size, rank=args.rank)
 
     # save log only for rank 0
-    if args.rank == 0 or not args.distributed:
-        sys.stdout = utils.PrintMultiple(sys.stdout, open(os.path.join(args.save_path, 'log.txt'), 'a+'))
+    #if args.rank == 0 or not args.distributed:
+    #    sys.stdout = utils.PrintMultiple(sys.stdout, open(os.path.join(args.save_path, 'log.txt'), 'a+'))
+    sys.stdout = utils.PrintMultiple(sys.stdout, open(os.path.join(args.save_path, 'log.txt'), 'a+'))
     print(args)
 
     # create model
@@ -195,9 +197,9 @@ def main_worker(gpu, ngpus_per_node, args):
 
             # remove module. prefix
             for k in list(state_dict.keys()):
-                if k.startswith('module.backbone.'):
+                if k.startswith('backbone.'):
                     # remove prefix
-                    state_dict[k[len("module.backbone."):]] = state_dict[k]
+                    state_dict[k[len("backbone."):]] = state_dict[k]
 
             # remove fc layers
             for k in list(state_dict.keys()):
@@ -213,34 +215,36 @@ def main_worker(gpu, ngpus_per_node, args):
 
     if not torch.cuda.is_available():
         print('using CPU, this will be slow')
-    elif args.distributed:
+    #elif args.distributed:
         # For multiprocessing distributed, DistributedDataParallel constructor
         # should always set the single device scope, otherwise,
         # DistributedDataParallel will use all available devices.
-        if args.gpu is not None:
-            torch.cuda.set_device(args.gpu)
-            model.cuda(args.gpu)
+    #    if args.gpu is not None:
+    #        torch.cuda.set_device(args.gpu)
+    #        model.cuda(args.gpu)
             # When using a single GPU per process and per
             # DistributedDataParallel, we need to divide the batch size
             # ourselves based on the total number of GPUs we have
-            args.batch_size = int(args.batch_size / ngpus_per_node)
-            args.workers = int((args.workers + ngpus_per_node - 1) / ngpus_per_node)
-            model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
-        else:
-            model.cuda()
+            #args.batch_size = int(args.batch_size / ngpus_per_node)
+            #args.workers = int((args.workers + ngpus_per_node - 1) / ngpus_per_node)
+            #model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
+            
+    #    else:
+    #        model.cuda()
             # DistributedDataParallel will divide and allocate batch_size to all
             # available GPUs if device_ids are not set
-            model = torch.nn.parallel.DistributedDataParallel(model)
+    #        model = torch.nn.parallel.DistributedDataParallel(model)
     elif args.gpu is not None:
         torch.cuda.set_device(args.gpu)
         model = model.cuda(args.gpu)
     else:
         # DataParallel will divide and allocate batch_size to all available GPUs
-        if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
-            model.features = torch.nn.DataParallel(model.features)
-            model.cuda()
-        else:
-            model = torch.nn.DataParallel(model).cuda()
+        #if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
+        #    model.features = torch.nn.DataParallel(model.features)
+        #    model.cuda()
+        #else:
+        #    model = torch.nn.DataParallel(model).cuda()
+        model = model.cuda()
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
@@ -261,7 +265,7 @@ def main_worker(gpu, ngpus_per_node, args):
         optimizer = LARC(optimizer=optimizer, trust_coefficient=0.001, clip=False)
 
     # optionally resume from a checkpoint
-    last_model_path = os.path.join(args.save_path, 'model_latest.pth.tar')
+    last_model_path = os.path.join(args.save_path, 'model_latest.pth.tar') #model_best.pth.tar
     if not args.resume and os.path.isfile(last_model_path):
         args.resume = last_model_path
     if args.resume:
@@ -302,14 +306,14 @@ def main_worker(gpu, ngpus_per_node, args):
             normalize,
         ]))
 
-    if args.distributed:
-        train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
-    else:
-        train_sampler = None
+    #if args.distributed:
+    #    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+    #else:
+    #    train_sampler = None
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
-        num_workers=args.workers, pin_memory=True, sampler=train_sampler)
+        train_dataset, batch_size=args.batch_size, shuffle=True, #(train_sampler is None),
+        num_workers=args.workers, pin_memory=True) #sampler=train_sampler)
 
     val_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(valdir, transforms.Compose([
@@ -326,8 +330,8 @@ def main_worker(gpu, ngpus_per_node, args):
         return
 
     for epoch in range(args.start_epoch, args.epochs):
-        if args.distributed:
-            train_sampler.set_epoch(epoch)
+        #if args.distributed:
+        #    train_sampler.set_epoch(epoch)
         if args.cos:
             adjust_learning_rate(optimizer, epoch, args)
 
@@ -341,7 +345,7 @@ def main_worker(gpu, ngpus_per_node, args):
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
 
-        if not args.distributed or (args.distributed and args.rank == 0):
+        if True:#not args.distributed or (args.distributed and args.rank == 0):
             save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': args.arch,

@@ -8,6 +8,8 @@ import utils
 import sys
 import math
 import functools
+import wandb
+
 from utils import utils
 
 import torch
@@ -71,35 +73,43 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
-parser.add_argument('--world-size', default=-1, type=int,
-                    help='number of nodes for distributed training')
-parser.add_argument('--rank', default=-1, type=int,
-                    help='node rank for distributed training')
-parser.add_argument('--dist-url', default='tcp://224.66.41.62:23456', type=str,
-                    help='url used to set up distributed training')
-parser.add_argument('--dist-backend', default='nccl', type=str,
-                    help='distributed backend')
+#parser.add_argument('--world-size', default=-1, type=int,
+#                    help='number of nodes for distributed training')
+#parser.add_argument('--rank', default=-1, type=int,
+#                    help='node rank for distributed training')
+#parser.add_argument('--dist-url', default='tcp://224.66.41.62:23456', type=str,
+#                    help='url used to set up distributed training')
+#parser.add_argument('--dist-backend', default='nccl', type=str,
+#                    help='distributed backend')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--gpu', default=0, type=int,
                     help='GPU id to use.')
-parser.add_argument('--multiprocessing-distributed', action='store_true',
-                    help='Use multi-processing distributed training to launch '
-                         'N processes per node, which has N GPUs. This is the '
-                         'fastest way to use PyTorch for either single node or '
-                         'multi node data parallel training')
+#parser.add_argument('--multiprocessing-distributed', action='store_true',
+#                    help='Use multi-processing distributed training to launch '
+#                         'N processes per node, which has N GPUs. This is the '
+#                         'fastest way to use PyTorch for either single node or '
+#                         'multi node data parallel training')
 parser.add_argument('--save-path', default='../saved/lincls/', type=str,
                     help='save path for checkpoints')
 parser.add_argument('--pretrained', default=None, type=str,
                     help='path to pretrained checkpoint')
 parser.add_argument('--no-freeze', action='store_true',
                     help='Do not freeze backbone')
+parser.add_argument("--wandb", default=None, help="Specify project name to log using WandB")
+
 
 best_acc1 = 0
+
+#TODO: delete comments, add config file with yaml
 
 
 def main():
     args = parser.parse_args()
+    
+    if args.wandb:
+        _wandb = vars(args)
+        wandb.init(project=args.wandb, entity="selfclassifier", config=_wandb)
 
     # create output directory
     os.makedirs(args.save_path, exist_ok=True)
@@ -118,8 +128,8 @@ def main():
         warnings.warn('You have chosen a specific GPU. This might slow down '
                       'your training')  
 
-    if args.dist_url == "env://" and args.world_size == -1:
-        args.world_size = int(os.environ["WORLD_SIZE"])
+    #if args.dist_url == "env://" and args.world_size == -1:
+    #    args.world_size = int(os.environ["WORLD_SIZE"])
         
 
     # Slurm
@@ -336,14 +346,28 @@ def main_worker(gpu, args, ngpus_per_node=None):
             adjust_learning_rate(optimizer, epoch, args)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, args)
+        acc1_train, loss_train = train(train_loader, model, criterion, optimizer, epoch, args)
 
         # evaluate on validation set
-        acc1 = validate(val_loader, model, criterion, args)
+        acc1_val ,val_loss = validate(val_loader, model, criterion, args)
+
+        if args.wandb:
+            wandb.log({"Train Loss": loss_train, "Train Acc": acc1_train, "Val Loss": val_loss, "Val Acc": acc1_val})
+        
+        # Print to console training loss and accuracy
+        print('-' * 100)
+        print('Epoch: [{0}]\t'
+                'Train Loss {loss_train:.4f}\t'
+                'Train Acc@1 {top1_train:.3f}\t'
+                'Val Loss {loss_val:.4f}\t'
+                'Val Acc@1 {top1_val:.3f}\t'.format(epoch, loss_train=loss_train, top1_train=acc1_train, loss_val=val_loss, top1_val=acc1_val))
+                
+        print('-' * 100)
+
 
         # remember best acc@1 and save checkpoint
-        is_best = acc1 > best_acc1
-        best_acc1 = max(acc1, best_acc1)
+        is_best = acc1_val > best_acc1
+        best_acc1 = max(acc1_val, best_acc1)
 
         if True:#not args.distributed or (args.distributed and args.rank == 0):
             save_checkpoint({
@@ -353,7 +377,7 @@ def main_worker(gpu, args, ngpus_per_node=None):
                 'best_acc1': best_acc1,
                 'optimizer': optimizer.state_dict(),
             }, is_best, filename=os.path.join(args.save_path,
-                                              'model_latest.pth.tar'.format(epoch, acc1)))
+                                              'model_latest.pth.tar'.format(epoch, acc1_val)))
             if epoch == args.start_epoch:
                 sanity_check(model.state_dict(), args.pretrained)
 
@@ -405,6 +429,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
 
         if i % args.print_freq == 0:
             progress.display(i)
+        
+    return top1.avg, losses.avg
 
 
 def validate(val_loader, model, criterion, args):
@@ -449,7 +475,7 @@ def validate(val_loader, model, criterion, args):
         print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
               .format(top1=top1, top5=top5))
 
-    return top1.avg
+    return top1.avg, loss
 
 
 def save_checkpoint(state, is_best, filename):
@@ -474,7 +500,7 @@ def sanity_check(state_dict, pretrained_weights):
             continue
 
         # name in pretrained model
-        k_pre = 'module.backbone.' + k[len('module.'):]
+        k_pre = 'backbone.' + k 
 
         assert ((state_dict[k].cpu() == state_dict_pre[k_pre]).all()), \
             '{} is changed in linear classifier training.'.format(k)

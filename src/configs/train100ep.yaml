@@ -10,12 +10,12 @@ gpu: 0
 use_bn: True
 sgd: True
 lars: True
-activation: leaky-relu
+activation: leaky_relu
 cos: True
 final_lr: 0.0048
 lr: 4.8
 queue_len: 1000
 wandb: cifar10
 dim: 128
-num_hidden: 1
+num_hidden: 2
 hidden-dim: 4096

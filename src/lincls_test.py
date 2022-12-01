@@ -41,8 +41,8 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     help='model architecture: ' +
                         ' | '.join(model_names) +
                         ' (default: resnet18)')
-parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
-                    help='number of data loading workers (default: 4)')
+#parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
+#                    help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=100, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
@@ -323,7 +323,8 @@ def main_worker(gpu, args, ngpus_per_node=None):
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True, #(train_sampler is None),
-        num_workers=args.workers, pin_memory=True) #sampler=train_sampler)
+        #num_workers=args.workers, 
+        pin_memory=True) #sampler=train_sampler) #pin_memory true for faster cpu to gpu transfer
 
     val_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(valdir, transforms.Compose([
@@ -333,7 +334,8 @@ def main_worker(gpu, args, ngpus_per_node=None):
             normalize,
         ])),
         batch_size=args.val_batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True)
+        #num_workers=args.workers, 
+        pin_memory=True)
 
     if args.evaluate:
         validate(val_loader, model, criterion, args)
@@ -412,12 +414,13 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         output = model(images)
         loss = criterion(output, target)
 
+       
         # measure accuracy and record loss
         acc1, acc5 = accuracy(output, target, topk=(1, 5))
         losses.update(loss.item(), images.size(0))
         top1.update(acc1[0], images.size(0))
         top5.update(acc5[0], images.size(0))
-
+         
         # compute gradient and do SGD step
         optimizer.zero_grad()
         loss.backward()

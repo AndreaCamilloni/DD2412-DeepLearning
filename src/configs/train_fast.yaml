@@ -10,14 +10,14 @@ gpu: 0
 use_bn: True
 sgd: True
 lars: True
-activation: leaky-relu
+activation: leaky_relu
 cos: True
 final_lr: 0.0048
 lr: 4.8
 queue_len: 50
 wandb: andrea
 dim: 128
-num_hidden: 1
+num_hidden: 2
 hidden-dim: 4096
  
 #python test.py cifar10/cifar10 --hidden-dim 4096 --dim 128 --batch-size 16 --cls-size 10 --use-bn --num-hidden 1 --activation leaky-relu --pretrained saved/cifar10/50epochs/model_best.pth.tar --num-samples-per-class 16

@@ -189,12 +189,36 @@ def main_worker(gpu,args):
     if args.lars:
         optimizer = LARC(optimizer=optimizer, trust_coefficient=0.001, clip=False)
 
+
+    if args.resume:
+        if os.path.isfile(args.resume):
+            print("=> loading checkpoint '{}'".format(args.resume))
+            if args.gpu is None:
+                checkpoint = torch.load(args.resume)
+            else:
+                # Map model to be loaded to specified single gpu.
+                loc = 'cuda:{}'.format(args.gpu)
+                checkpoint = torch.load(args.resume, map_location=loc)
+            args.start_epoch = checkpoint['epoch']
+            best_loss = checkpoint['best_loss']
+            nn_queue = checkpoint['nn_queue']
+            model.load_state_dict(checkpoint['state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer'])
+            print("=> loaded checkpoint '{}' (epoch {})"
+                  .format(args.resume, checkpoint['epoch']))
+            del checkpoint
+        else:
+            print("=> no checkpoint found at '{}'".format(args.resume))
+
+
     cudnn.benchmark = True # Should make training faster
     
     traindir = os.path.join(args.data, 'train')
     transform = utils.DataAugmentation(args.global_crops_scale, args.local_crops_scale, args.local_crops_number)
     dataset = utils.ImageFolderWithIndices(traindir, transform=transform)
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
+
+    n = len(dataset)
 
     #Train with subset of data 
     if args.subset > 0: 
@@ -204,8 +228,8 @@ def main_worker(gpu,args):
         # this is done to ensure that the subset is balanced
         indices = []
         for i in range(args.cls_size):
-            indices += random.sample(range(i*int(args.subset/args.cls_size), (i+1)*int(args.subset/args.cls_size)), int(args.subset/args.cls_size))
-            print("Class {} has {} samples".format(i, len(indices)))
+            indices += random.sample(range(i*int(n/args.cls_size), (i+1)*int(n/args.cls_size)), int(args.subset/args.cls_size))
+            #print("Class {} has {} samples".format(i, len(indices)))
 
         #idxs = np.random.choice(len(dataset), size=args.subset, replace=False)
         subset = torch.utils.data.Subset(dataset, indices)

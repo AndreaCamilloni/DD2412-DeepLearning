@@ -1,7 +1,7 @@
 # Training configuration file - 100 epochs - CIFAR10 
 data: cifar10/cifar10
 arch: resnet18
-save-path: ./saved/
+save-path: ./saved/cifar10/100epochs/fullcifar10/
 cls-size: 10
 epochs: 100
 batch_size: 64
@@ -15,7 +15,8 @@ cos: True
 final_lr: 0.0048
 lr: 4.8
 queue_len: 1000
-wandb: cifar10
+wandb: cifar10_resume
 dim: 128
-num_hidden: 2
+num_hidden: 1
 hidden-dim: 4096
+resume: ./saved/model_last.pth.tar

@@ -128,10 +128,10 @@ def main():
             config = yaml.safe_load(file)
  
         update_args(args, config)
-        if args.wandb:
-            _wandb = vars(args)
-            wandb.init(project=args.wandb, entity="selfclassifier", config=_wandb)
-            # update_args(args, dict(run.config))
+    if args.wandb:
+        _wandb = vars(args)
+        wandb.init(project=args.wandb, entity="selfclassifier", config=_wandb)
+        # update_args(args, dict(run.config))
     
     # create output directory
     os.makedirs(args.save_path, exist_ok=True)

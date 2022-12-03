@@ -1,0 +1,15 @@
+# Test linear classifier
+evaluate: True
+data: cifar10/cifar10  
+pretrained: saved/model_best.pth.tar 
+batch-size: 64 
+val-batch-size: 128
+epochs: 1 
+cos: True
+sgd: True
+lars: True
+lr: 0.8 
+wd: 0.0 
+save-path: ../lincls_saved/ 
+resume: ../lincls_saved/model_latest.pth.tar
+#wandb

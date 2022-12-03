@@ -8,6 +8,7 @@ import numpy as np
 import math
 import utils
 import pickle
+import yaml
 from PIL import Image, ImageOps, ImageDraw
 
 import torch
@@ -38,7 +39,9 @@ model_names = sorted(name for name in models.__dict__
     and callable(models.__dict__[name]))
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Self-Supervised Training')
-parser.add_argument('data', metavar='DIR',
+parser.add_argument('--config', type=str,
+                    help='path to config file', default="./configs/test.yaml")
+parser.add_argument('--data', metavar='DIR',
                     help='path to dataset')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     choices=model_names,
@@ -92,10 +95,19 @@ parser.add_argument('--kmeans-cls', default=None, type=str,
 #parser.add_argument('--imagenet-info-path', default='./imagenet_info/', type=str,
 #                    help='includes dataset_class_info.json, class_hierarchy.txt, node_names.txt')
 
+def update_args(args, config_dict):
+    for key, val in config_dict.items():
+        setattr(args, key, val)
 
 def main():
     args = parser.parse_args()
-
+    if args.config is not None:
+        with open(str(args.config), "r") as file:
+            # safe load
+            config = yaml.safe_load(file)
+ 
+        update_args(args, config)
+    
     # create output directory
     os.makedirs(args.save_path, exist_ok=True)
 

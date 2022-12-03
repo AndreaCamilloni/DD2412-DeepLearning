@@ -8,6 +8,7 @@ import utils
 import sys
 import math
 import functools
+import yaml
 import wandb
 
 from utils import utils
@@ -34,7 +35,9 @@ model_names = sorted(name for name in models.__dict__
 print = functools.partial(print, flush=True)
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
-parser.add_argument('data', metavar='DIR',
+parser.add_argument('--config', type=str,
+                    help='path to config file', default="./configs/lincls_train.yaml")
+parser.add_argument('--data', metavar='DIR',
                     help='path to dataset')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     choices=model_names,
@@ -101,12 +104,22 @@ parser.add_argument("--wandb", default=None, help="Specify project name to log u
 
 best_acc1 = 0
 
-#TODO: delete comments, add config file with yaml
+
+
+def update_args(args, config_dict):
+    for key, val in config_dict.items():
+        setattr(args, key, val)
 
 
 def main():
     args = parser.parse_args()
-    
+
+    if args.config is not None:
+        with open(str(args.config), "r") as file:
+            # safe load
+            config = yaml.safe_load(file)
+        update_args(args, config)
+
     if args.wandb:
         _wandb = vars(args)
         wandb.init(project=args.wandb, entity="selfclassifier", config=_wandb)
@@ -324,7 +337,7 @@ def main_worker(gpu, args, ngpus_per_node=None):
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True, #(train_sampler is None),
         #num_workers=args.workers, 
-        pin_memory=True) #sampler=train_sampler) #pin_memory true for faster cpu to gpu transfer
+        pin_memory=False) #sampler=train_sampler) #pin_memory true for faster cpu to gpu transfer
 
     val_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(valdir, transforms.Compose([
@@ -335,7 +348,7 @@ def main_worker(gpu, args, ngpus_per_node=None):
         ])),
         batch_size=args.val_batch_size, shuffle=False,
         #num_workers=args.workers, 
-        pin_memory=True)
+        pin_memory=False)
 
     if args.evaluate:
         validate(val_loader, model, criterion, args)

@@ -1,0 +1,12 @@
+# Configuration for testing the unsupervised classification
+data: cifar10/cifar10 
+hidden-dim: 4096 
+dim: 128 
+batch-size: 64 
+cls-size: 10 
+use-bn: True
+num-hidden: 1 
+activation: leaky_relu 
+pretrained: saved/model_best.pth.tar
+num-samples-per-class: 16 # should be a square number 1,4,9,16,...
+save-path: ../saved/results/

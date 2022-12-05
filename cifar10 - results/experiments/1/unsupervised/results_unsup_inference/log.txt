@@ -1,0 +1,137 @@
+Namespace(activation='leaky-relu', arch='resnet18', batch_size=64, cls_num=0, cls_size=10, data='cifar10/cifar10', dim=128, hidden_dim=4096, kmeans_cls=None, model='self-classifier', num_classes=10, num_hidden=1, num_samples_per_class=16, pretrained='saved/model_best.pth.tar', print_freq=10, save_path='../saved/results/', seed=None, subset_file=None, tau=0.1, use_bn=True)
+=> creating model 'resnet18'
+Model(
+  (backbone): ResNet(
+    (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (relu): ReLU(inplace=True)
+    (maxpool): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+    (layer1): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (layer2): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(64, 128, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (layer3): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(128, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(128, 256, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (layer4): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(256, 512, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Linear(in_features=512, out_features=128, bias=True)
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint 'saved/model_best.pth.tar'
+=> loaded pre-trained model 'saved/model_best.pth.tar' (epoch 99)
+=> using 1 GPUs.
+Test: [  0/157]	Time  1.969 ( 1.969)
+Test: [ 10/157]	Time  0.171 ( 0.337)
+Test: [ 20/157]	Time  0.167 ( 0.257)
+Test: [ 30/157]	Time  0.181 ( 0.233)
+Test: [ 40/157]	Time  0.175 ( 0.219)
+Test: [ 50/157]	Time  0.173 ( 0.210)
+Test: [ 60/157]	Time  0.173 ( 0.205)
+Test: [ 70/157]	Time  0.175 ( 0.200)
+Test: [ 80/157]	Time  0.174 ( 0.197)
+Test: [ 90/157]	Time  0.172 ( 0.195)
+Test: [100/157]	Time  0.172 ( 0.192)
+Test: [110/157]	Time  0.169 ( 0.190)
+Test: [120/157]	Time  0.226 ( 0.193)
+Test: [130/157]	Time  0.237 ( 0.197)
+Test: [140/157]	Time  0.243 ( 0.200)
+Test: [150/157]	Time  0.186 ( 0.202)
+=> number of samples: 10000
+=> number of unique assignments: 10
+=> NMI: 61.110%
+=> Adjusted NMI: 61.041%
+=> Adjusted Rand-Index: 50.460%
+=> Accuracy: 68.650%
+=> saved grid_0.pdf, accuracy = 0.987, nsamples = 940
+=> grid 0 labels: [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
+=> saved grid_1.pdf, accuracy = 0.959, nsamples = 732
+=> grid 1 labels: [7 7 4 7 7 7 7 7 7 5 7 7 7 7 7 7]
+=> saved grid_2.pdf, accuracy = 0.930, nsamples = 1033
+=> grid 2 labels: [9 9 9 9 9 9 9 9 9 9 9 0 9 9 9 9]
+=> saved grid_3.pdf, accuracy = 0.897, nsamples = 807
+=> grid 3 labels: [6 6 6 2 6 6 6 6 6 2 2 6 6 6 6 6]
+=> saved grid_4.pdf, accuracy = 0.729, nsamples = 1045
+=> grid 4 labels: [4 6 4 4 2 4 4 5 2 5 4 4 4 4 4 4]
+=> saved grid_5.pdf, accuracy = 0.688, nsamples = 1241
+=> grid 5 labels: [8 0 0 8 0 8 8 8 8 8 8 8 0 0 0 8]
+=> saved grid_6.pdf, accuracy = 0.612, nsamples = 798
+=> grid 6 labels: [2 3 0 2 2 0 0 2 2 4 0 0 0 0 0 0]
+=> saved grid_7.pdf, accuracy = 0.468, nsamples = 1529
+=> grid 7 labels: [6 3 2 3 3 5 5 3 3 5 7 5 5 3 5 5]
+=> saved grid_8.pdf, accuracy = 0.447, nsamples = 692
+=> grid 8 labels: [2 0 8 8 2 0 2 9 0 6 0 8 2 2 2 0]
+=> saved grid_9.pdf, accuracy = 0.356, nsamples = 1183
+=> grid 9 labels: [5 3 4 3 3 4 7 5 3 4 0 7 3 3 3 7]

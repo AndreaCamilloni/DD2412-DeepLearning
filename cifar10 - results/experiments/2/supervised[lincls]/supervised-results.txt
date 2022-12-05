@@ -1,0 +1,20 @@
+python lincls_test.py cifar10/cifar10  --pretrained saved/model_best.pth.tar  --batch-size 64 --val-batch-size 256 --epochs 100 --cos --sgd --lars --lr 0.8 --wd 0.0 --save-path ../lincls_saved/ --eval
+
+
+ python lincls_test.py cifar10/cifar10  --pretrained saved/model_best.pth.tar  --batch-size 64 --val-batch-size 256 --epochs 100 --cos --sgd --lars --lr 0.8 --wd 0.0 --save-path ../lincls_saved/ --eval
+lincls_test.py:128: UserWarning: You have chosen a specific GPU. This might slow down your training
+  warnings.warn('You have chosen a specific GPU. This might slow down '
+Use GPU: 0 for training
+Namespace(arch='resnet18', batch_size=64, cos=True, data='cifar10/cifar10', epochs=100, evaluate=True, gpu=0, lars=True, lr=0.8, momentum=0.9, nesterov=False, no_freeze=False, pretrained='saved/model_best.pth.tar', print_freq=10, resume='', save_path='../lincls_saved/', seed=None, sgd=True, start_epoch=0, val_batch_size=256, wandb=None, weight_decay=0.0)
+=> creating model 'resnet18'
+
+=> freezing backbone..
+=> loading checkpoint 'saved/model_best.pth.tar'
+=> loaded pre-trained model 'saved/model_best.pth.tar'
+=> loading checkpoint '../lincls_saved/model_latest.pth.tar'
+=> loaded checkpoint '../lincls_saved/model_latest.pth.tar' (epoch 100)
+Test: [ 0/40]   Time  2.319 ( 2.319)    Loss 2.8790e-01 (2.8790e-01)    Acc@1  90.62 ( 90.62)   Acc@5  99.22 ( 99.22)
+Test: [10/40]   Time  0.645 ( 0.815)    Loss 4.9518e-01 (2.5939e-01)    Acc@1  83.98 ( 90.80)   Acc@5  99.61 ( 99.86)
+Test: [20/40]   Time  0.643 ( 0.732)    Loss 5.8995e-01 (3.9378e-01)    Acc@1  78.12 ( 85.77)   Acc@5  99.61 ( 99.80)
+Test: [30/40]   Time  0.644 ( 0.702)    Loss 2.9589e-01 (3.7574e-01)    Acc@1  89.84 ( 86.54)   Acc@5  99.61 ( 99.70)
+ * Acc@1 88.380 Acc@5 99.740

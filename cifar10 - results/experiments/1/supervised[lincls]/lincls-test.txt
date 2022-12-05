@@ -1,0 +1,20 @@
+ python lincls_test.py cifar10/cifar10  --pretrained saved/exp1/model_best.pth.tar  --val-batch-size 128 --epochs 100 --cos --sgd --lars --lr 0.8 --wd 0.0 --save-path ../lincls_exp1/ --evaluate
+lincls_test.py:128: UserWarning: You have chosen a specific GPU. This might slow down your training
+  warnings.warn('You have chosen a specific GPU. This might slow down '
+Use GPU: 0 for training
+Namespace(arch='resnet18', batch_size=32, cos=True, data='cifar10/cifar10', epochs=100, evaluate=True, gpu=0, lars=True, lr=0.8, momentum=0.9, nesterov=False, no_freeze=False, pretrained='saved/exp1/model_best.pth.tar', print_freq=10, resume='', save_path='../lincls_exp1/', seed=None, sgd=True, start_epoch=0, val_batch_size=128, wandb=None, weight_decay=0.0)
+=> creating model 'resnet18'
+=> freezing backbone..
+=> loading checkpoint 'saved/exp1/model_best.pth.tar'
+=> loaded pre-trained model 'saved/exp1/model_best.pth.tar'
+^A^A=> loading checkpoint '../lincls_exp1/model_latest.pth.tar'
+=> loaded checkpoint '../lincls_exp1/model_latest.pth.tar' (epoch 100)
+Test: [ 0/79]   Time  6.540 ( 6.540)    Loss 3.4901e-01 (3.4901e-01)    Acc@1  86.72 ( 86.72)   Acc@5  99.22 ( 99.22)
+Test: [10/79]   Time  0.407 ( 0.997)    Loss 7.0015e-02 (1.9184e-01)    Acc@1  96.88 ( 93.32)   Acc@5 100.00 ( 99.86)
+Test: [20/79]   Time  0.566 ( 0.800)    Loss 4.0745e-01 (2.5185e-01)    Acc@1  87.50 ( 91.11)   Acc@5 100.00 ( 99.85)
+Test: [30/79]   Time  0.433 ( 0.703)    Loss 6.8027e-01 (3.8562e-01)    Acc@1  77.34 ( 85.91)   Acc@5 100.00 ( 99.85)
+Test: [40/79]   Time  0.511 ( 0.641)    Loss 5.5914e-01 (3.8664e-01)    Acc@1  80.47 ( 86.07)   Acc@5  99.22 ( 99.87)
+Test: [50/79]   Time  0.427 ( 0.603)    Loss 2.1493e-01 (3.9537e-01)    Acc@1  91.41 ( 85.74)   Acc@5 100.00 ( 99.79)
+Test: [60/79]   Time  0.448 ( 0.576)    Loss 3.0577e-01 (3.8078e-01)    Acc@1  89.84 ( 86.16)   Acc@5 100.00 ( 99.80)
+Test: [70/79]   Time  0.508 ( 0.558)    Loss 1.2248e-01 (3.5040e-01)    Acc@1  94.53 ( 87.29)   Acc@5 100.00 ( 99.80)
+ * Acc@1 88.020 Acc@5 99.820

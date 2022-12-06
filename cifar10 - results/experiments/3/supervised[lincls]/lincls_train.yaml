@@ -1,0 +1,13 @@
+# Train Linear classifier
+data: cifar10/cifar10  
+pretrained: saved/cifar10/100epochs/adam/model_best.pth.tar  
+batch_size: 64 
+val_batch_size: 256
+epochs: 100 
+cos: False
+sgd: False #Adam
+lars: True
+lr: 0.8 
+wd: 0.0 
+save_path: ../lincls_saved/ 
+wandb: supervisedclassification-adam

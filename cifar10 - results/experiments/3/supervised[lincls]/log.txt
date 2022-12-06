@@ -1,0 +1,22 @@
+python lincls_test.py --config configs/lincls_test.yaml
+lincls_test.py:141: UserWarning: You have chosen a specific GPU. This might slow down your training
+  warnings.warn('You have chosen a specific GPU. This might slow down '
+Use GPU: 0 for training
+Namespace(arch='resnet18', batch_size=64, config='configs/lincls_test.yaml', cos=True, data='cifar10/cifar10', epochs=1, evaluate=True, gpu=0, lars=False, lr=0.8, momentum=0.9, nesterov=False, no_freeze=False, pretrained='saved/cifar10/100epochs/adam/model_best.pth.tar', print_freq=10, resume='../lincls_saved/model_latest.pth.tar', save_path='../lincls_saved/', seed=None, sgd=False, start_epoch=0, val_batch_size=128, wandb=None, wd=0.0, weight_decay=0)
+=> creating model 'resnet18'
+=> freezing backbone..
+=> loading checkpoint 'saved/cifar10/100epochs/adam/model_best.pth.tar'
+=> loaded pre-trained model 'saved/cifar10/100epochs/adam/model_best.pth.tar'
+=> loading checkpoint '../lincls_saved/model_latest.pth.tar'
+=> loaded checkpoint '../lincls_saved/model_latest.pth.tar' (epoch 100)
+Test: [ 0/79]   Time  1.712 ( 1.712)    Loss 3.2909e+04 (3.2909e+04)    Acc@1  28.91 ( 28.91)   Acc@5  89.06 ( 89.06)
+Test: [10/79]   Time  0.308 ( 0.449)    Loss 7.9371e+03 (2.1255e+04)    Acc@1  89.06 ( 51.07)   Acc@5  98.44 ( 94.53)
+Test: [20/79]   Time  0.308 ( 0.390)    Loss 3.6496e+03 (1.3852e+04)    Acc@1  81.25 ( 66.82)   Acc@5 100.00 ( 97.06)
+Test: [30/79]   Time  0.317 ( 0.367)    Loss 4.8984e+04 (2.2032e+04)    Acc@1   1.56 ( 51.41)   Acc@5  96.88 ( 97.00)
+Test: [40/79]   Time  0.316 ( 0.355)    Loss 2.2578e+03 (1.8011e+04)    Acc@1  89.84 ( 57.58)   Acc@5 100.00 ( 97.69)
+Test: [50/79]   Time  0.319 ( 0.347)    Loss 1.3310e+04 (1.5857e+04)    Acc@1  54.69 ( 61.29)   Acc@5  96.88 ( 97.92)
+Test: [60/79]   Time  0.318 ( 0.343)    Loss 1.0459e+04 (1.5424e+04)    Acc@1  70.31 ( 61.50)   Acc@5  97.66 ( 98.00)
+Test: [70/79]   Time  0.319 ( 0.339)    Loss 1.5005e+03 (1.3891e+04)    Acc@1  94.53 ( 65.27)   Acc@5 100.00 ( 98.22)
+ * Acc@1 68.040 Acc@5 98.370
+
+

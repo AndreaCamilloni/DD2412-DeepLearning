@@ -46,6 +46,8 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                         ' (default: resnet18)')
 #parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
 #                    help='number of data loading workers (default: 4)')
+parser.add_argument('--num-classes', default=10, type=int, metavar='N',
+                    help='number of classes - this update the last layer of the model')
 parser.add_argument('--epochs', default=100, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
@@ -100,6 +102,7 @@ parser.add_argument('--pretrained', default=None, type=str,
 parser.add_argument('--no-freeze', action='store_true',
                     help='Do not freeze backbone')
 parser.add_argument("--wandb", default=None, help="Specify project name to log using WandB")
+parser.add_argument("--wandb-entity", default=None, help="Specify WandB entity name")
 
 
 best_acc1 = 0
@@ -122,7 +125,7 @@ def main():
 
     if args.wandb:
         _wandb = vars(args)
-        wandb.init(project=args.wandb, entity="selfclassifier", config=_wandb)
+        wandb.init(project=args.wandb, entity=args.wandb_entity, config=_wandb)
 
     # create output directory
     os.makedirs(args.save_path, exist_ok=True)
@@ -204,8 +207,11 @@ def main_worker(gpu, args, ngpus_per_node=None):
             if name not in ['fc.weight', 'fc.bias']:
                 param.requires_grad = False
         # init the fc layer
+        #print('=> init fc layer..')
+        #print(model.fc)
         model.fc.weight.data.normal_(mean=0.0, std=0.01)
         model.fc.bias.data.zero_()
+        #exit()
     else:
         print('=> backbone is not frozen.')
 
@@ -231,6 +237,11 @@ def main_worker(gpu, args, ngpus_per_node=None):
 
             args.start_epoch = 0
             msg = model.load_state_dict(state_dict, strict=False)
+            print('-'*100)
+            if args.arch == 'resnet18':
+                model.fc.out_features = args.num_classes #for cifar10
+
+            print(model)
             assert set(msg.missing_keys) == {"fc.weight", "fc.bias"}
             print("=> loaded pre-trained model '{}'".format(args.pretrained))
         else:

@@ -5,7 +5,7 @@ save_path: ./saved/cifar10/50epochs/
 cls_size: 10
 epochs: 50
 batch_size: 16
-subset: 5000
+subset: 2000
 gpu: 0
 use_bn: True
 sgd: True
@@ -16,6 +16,7 @@ final_lr: 0.0048
 lr: 4.8
 queue_len: 50
 wandb: subset-cifar10
+wandb_entity: andreacamilloni #Put your team name or your username
 dim: 128
 num_hidden: 2
 hidden_dim: 4096

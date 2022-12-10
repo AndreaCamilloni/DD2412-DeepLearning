@@ -15,8 +15,9 @@ cos: True
 final_lr: 0.0048
 lr: 4.8
 queue_len: 1000
-wandb: cifar10_resume
+wandb: resume #Name of the project/experiment
+wandb_entity: andreacamilloni #Put your team name or your username
 dim: 128
 num_hidden: 1
 hidden_dim: 4096
-resume: ./saved/model_last.pth.tar
+resume: ./saved/exp1/model_last.pth.tar

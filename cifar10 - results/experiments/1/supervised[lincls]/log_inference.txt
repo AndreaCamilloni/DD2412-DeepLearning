@@ -1,0 +1,8 @@
+=> loaded pre-trained model 'saved/exp1/model_best.pth.tar'
+=> loading checkpoint '../lincls_exp1/model_latest.pth.tar'
+=> loaded checkpoint '../lincls_exp1/model_latest.pth.tar' (epoch 100)
+Test: [ 0/40]   Time  3.623 ( 3.623)    Loss 3.6997e-01 (3.6997e-01)    Acc@1  87.11 ( 87.11)   Acc@5  99.61 ( 99.61)
+Test: [10/40]   Time  0.652 ( 1.066)    Loss 5.0159e-01 (2.7063e-01)    Acc@1  82.42 ( 90.34)   Acc@5 100.00 ( 99.89)
+Test: [20/40]   Time  0.655 ( 0.870)    Loss 5.7589e-01 (3.9533e-01)    Acc@1  80.47 ( 85.75)   Acc@5  99.22 ( 99.87)
+Test: [30/40]   Time  0.647 ( 0.800)    Loss 3.2600e-01 (3.8174e-01)    Acc@1  88.28 ( 86.00)   Acc@5 100.00 ( 99.81)
+ * Acc@1 87.890 Acc@5 99.830

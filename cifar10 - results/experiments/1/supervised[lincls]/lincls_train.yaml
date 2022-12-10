@@ -1,0 +1,15 @@
+# Train Linear classifier
+data: cifar10/cifar10  
+pretrained: saved/exp1/model_best.pth.tar  
+batch_size: 64 
+val_batch_size: 256
+epochs: 100 
+cos: True
+sgd: True
+lars: True
+lr: 0.8 
+wd: 0.0 
+save_path: ../lincls_saved/ 
+wandb: supervisedclassification-exp1
+wandb_entity: andreacamilloni
+num_classes: 10 #this should be defined for updating last layer output features of architecture

@@ -44,9 +44,7 @@ parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=16, type=int,
                     metavar='N',
-                    help='mini-batch size (default: 16), this is the total '
-                         'batch size of all GPUs on the current node when '
-                         'using Data Parallel or Distributed Data Parallel')
+                    help='mini-batch size (default: 16)')
 parser.add_argument('--lr', '--learning-rate', default=4.8, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--start-warmup', default=0.3, type=float,
@@ -112,7 +110,7 @@ parser.add_argument('--subset', default=0, type=int,
 parser.add_argument('--activation', type=str,
                     help='relu or leaky_relu in MLP layers', default='leaky_relu')
 parser.add_argument("--wandb", default=None, help="Specify project name to log using WandB")
-
+parser.add_argument("--wandb-entity", default=None, help="Specify WandB entity name")
 
 
 def update_args(args, config_dict):
@@ -130,7 +128,7 @@ def main():
         update_args(args, config)
     if args.wandb:
         _wandb = vars(args)
-        wandb.init(project=args.wandb, entity="selfclassifier", config=_wandb)
+        wandb.init(project=args.wandb, entity=args.wandb_entity, config=_wandb)
         # update_args(args, dict(run.config))
     
     # create output directory

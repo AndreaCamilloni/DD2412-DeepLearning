@@ -47,19 +47,17 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     choices=model_names,
                     help='model architecture: ' +
                          ' | '.join(model_names) +
-                         ' (default: resnet50)')
+                         ' (default: resnet18)')
 parser.add_argument('-b', '--batch-size', default=16, type=int,
                     metavar='N',
-                    help='mini-batch size (default: 256), this is the total '
-                         'batch size of all GPUs on the current node when '
-                         'using Data Parallel or Distributed Data Parallel')
+                    help='mini-batch size (default: 16)')
 parser.add_argument('-p', '--print-freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--save-path', default='../saved/', type=str,
                     help='save path for checkpoints')
-parser.add_argument('--pretrained', default='../savedmodel_best.pth.tar', type=str,
+parser.add_argument('--pretrained', default='../saved/model_best.pth.tar', type=str,
                     help='path to pretrained checkpoint')
 parser.add_argument('--cls-size', type=int, default=10,
                     help='size of classification layer')
@@ -83,11 +81,12 @@ parser.add_argument('--subset-file', default=None, type=str,
                     help='path to imagenet subset txt file')
 parser.add_argument('--activation', type=str, default='relu',
                     help='use regular relu layers instead of leaky relu in MLP')
+#TODO: remove arg model, because we are only using the self-classifier
 parser.add_argument('--model', default='self-classifier', const='self-classifier', nargs='?',
-                    choices=['self-classifier', 'scan', 'sela', 'mocov2', 'barlowtwins', 'dino', 'obow', 'swav'],
-                    help='type of pretrained model (default: %(default)s)')
-parser.add_argument('--kmeans-cls', default=None, type=str,
-                    help='path to kmeans classifier')
+                    choices=['self-classifier'],
+                    help='type of pretrained model (default: %(default)s) - Only choice is self-classifier')
+#parser.add_argument('--kmeans-cls', default=None, type=str,
+#                    help='path to kmeans classifier')
 #parser.add_argument('--superclass', default=None, const=None, nargs='?', type=str,
 #                    choices=[None, '0', '1', '2', '3', '4', '5', '6', '7', '8',
 #                             'entity13', 'entity30', 'living17', 'nonliving26'],
@@ -311,8 +310,8 @@ def validate(val_loader, model, args):
         [batch_time],
         prefix='Test: ')
 
-    if args.kmeans_cls is not None:
-        kmeans = pickle.load(open(args.kmeans_cls, "rb"))
+    #if args.kmeans_cls is not None:
+    #    kmeans = pickle.load(open(args.kmeans_cls, "rb"))
 
     # switch to evaluate mode
     model.eval()
@@ -325,10 +324,10 @@ def validate(val_loader, model, args):
                 images = images.cuda()
 
             # compute output
-            if args.model == 'self-classifier':
-                output = model(images).detach().cpu().numpy() #cls_num=args.cls_num
-            else:
-                output = model(images).detach().cpu().numpy()
+            #if args.model == 'self-classifier':
+            output = model(images).detach().cpu().numpy() #cls_num=args.cls_num
+            #else:
+            #    output = model(images).detach().cpu().numpy()
 
             num_samples = output.shape[0]
 
@@ -336,10 +335,10 @@ def validate(val_loader, model, args):
             all_targets[idx: idx + num_samples] = targets.numpy()
 
             # compute prediction
-            if args.kmeans_cls is not None:
-                preds_i = kmeans.predict(output.astype(np.float64))
-            else:
-                preds_i = output.argmax(1)
+            #if args.kmeans_cls is not None:
+            #    preds_i = kmeans.predict(output.astype(np.float64))
+            #else:
+            preds_i = output.argmax(1)
             all_preds[idx: idx + num_samples] = preds_i
 
             idx += num_samples

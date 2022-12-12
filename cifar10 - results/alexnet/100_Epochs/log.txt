@@ -1,0 +1,780 @@
+Namespace(activation='leaky_relu', arch='alexnet', batch_size=32, cls_num=0, cls_size=10, config='configs/test_config.yaml', cos=True, data='cifar10/cifar10', dim=128, final_lr=0.0048, gpu=0, hidden_dim=4096, kmeans_cls=None, lars=True, lr=4.8, model='self-classifier', num_classes=10, num_hidden=2, num_samples_per_class=4, pretrained='./saved/cifar10/alexnet/full-cifar10/model_last.pth.tar', print_freq=10, queue_len=1000, save_path='./test_results/alexnet/100eps/', seed=None, sgd=True, subset=0, subset_file=None, tau=0.1, use_bn=True, **{'cls-size': 10, 'hidden-dim': 4096})
+=> creating model 'alexnet'
+Model(
+  (backbone): AlexNet(
+    (features): Sequential(
+      (0): Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+      (1): ReLU(inplace=True)
+      (2): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (3): Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+      (4): ReLU(inplace=True)
+      (5): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (6): Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (7): ReLU(inplace=True)
+      (8): Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (9): ReLU(inplace=True)
+      (10): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (11): ReLU(inplace=True)
+      (12): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(6, 6))
+    (classifier): Sequential(
+      (0): Dropout(p=0.5, inplace=False)
+      (1): Linear(in_features=9216, out_features=4096, bias=True)
+      (2): ReLU(inplace=True)
+      (3): Dropout(p=0.5, inplace=False)
+      (4): Linear(in_features=4096, out_features=4096, bias=True)
+      (5): ReLU(inplace=True)
+      (6): Linear(in_features=4096, out_features=1000, bias=True)
+    )
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Sequential(
+      (0): Linear(in_features=1000, out_features=4096, bias=True)
+      (1): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): LeakyReLU(negative_slope=0.01)
+      (3): Linear(in_features=4096, out_features=4096, bias=True)
+      (4): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (5): LeakyReLU(negative_slope=0.01)
+      (6): Linear(in_features=4096, out_features=128, bias=True)
+    )
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar'
+=> loaded pre-trained model './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar' (epoch 100)
+=> using 1 GPUs.
+Test: [  0/313]	Time  2.307 ( 2.307)
+Test: [ 10/313]	Time  0.084 ( 0.293)
+Test: [ 20/313]	Time  0.084 ( 0.197)
+Test: [ 30/313]	Time  0.084 ( 0.162)
+Test: [ 40/313]	Time  0.087 ( 0.143)
+Test: [ 50/313]	Time  0.085 ( 0.132)
+Test: [ 60/313]	Time  0.097 ( 0.125)
+Test: [ 70/313]	Time  0.084 ( 0.120)
+Test: [ 80/313]	Time  0.084 ( 0.116)
+Test: [ 90/313]	Time  0.107 ( 0.113)
+Test: [100/313]	Time  0.084 ( 0.110)
+Test: [110/313]	Time  0.085 ( 0.108)
+Test: [120/313]	Time  0.086 ( 0.107)
+Test: [130/313]	Time  0.087 ( 0.105)
+Test: [140/313]	Time  0.083 ( 0.104)
+Test: [150/313]	Time  0.083 ( 0.103)
+Test: [160/313]	Time  0.084 ( 0.102)
+Test: [170/313]	Time  0.101 ( 0.101)
+Test: [180/313]	Time  0.084 ( 0.100)
+Test: [190/313]	Time  0.083 ( 0.099)
+Test: [200/313]	Time  0.082 ( 0.098)
+Test: [210/313]	Time  0.095 ( 0.098)
+Test: [220/313]	Time  0.087 ( 0.098)
+Test: [230/313]	Time  0.086 ( 0.098)
+Test: [240/313]	Time  0.084 ( 0.097)
+Test: [250/313]	Time  0.086 ( 0.097)
+Test: [260/313]	Time  0.081 ( 0.096)
+Test: [270/313]	Time  0.082 ( 0.096)
+Test: [280/313]	Time  0.110 ( 0.096)
+Test: [290/313]	Time  0.091 ( 0.096)
+Test: [300/313]	Time  0.086 ( 0.095)
+Test: [310/313]	Time  0.086 ( 0.095)
+=> number of samples: 10000
+=> number of unique assignments: 10
+=> NMI: 41.944%
+=> Adjusted NMI: 41.842%
+=> Adjusted Rand-Index: 28.445%
+=> Accuracy: 46.530%
+=> saved grid_0.pdf, accuracy = 0.741, nsamples = 679
+=> grid 0 labels: [4 6 6 4]
+=> saved grid_1.pdf, accuracy = 0.662, nsamples = 710
+=> grid 1 labels: [0 0 0 0]
+=> saved grid_2.pdf, accuracy = 0.657, nsamples = 1293
+=> grid 2 labels: [8 8 8 0]
+=> saved grid_3.pdf, accuracy = 0.650, nsamples = 955
+=> grid 3 labels: [7 7 2 7]
+=> saved grid_4.pdf, accuracy = 0.488, nsamples = 887
+=> grid 4 labels: [0 1 9 9]
+=> saved grid_5.pdf, accuracy = 0.469, nsamples = 1172
+=> grid 5 labels: [9 9 8 1]
+=> saved grid_6.pdf, accuracy = 0.348, nsamples = 1035
+=> grid 6 labels: [4 3 6 3]
+=> saved grid_7.pdf, accuracy = 0.285, nsamples = 1003
+=> grid 7 labels: [7 5 3 3]
+=> saved grid_8.pdf, accuracy = 0.270, nsamples = 1203
+=> grid 8 labels: [3 4 5 2]
+=> saved grid_9.pdf, accuracy = 0.241, nsamples = 1063
+=> grid 9 labels: [2 6 5 4]
+Namespace(activation='leaky_relu', arch='alexnet', batch_size=32, cls_num=0, cls_size=10, config='configs/test_config.yaml', cos=True, data='cifar10/cifar10', dim=128, final_lr=0.0048, gpu=0, hidden_dim=4096, kmeans_cls=None, lars=True, lr=4.8, model='self-classifier', num_classes=10, num_hidden=2, num_samples_per_class=4, pretrained='./saved/cifar10/alexnet/full-cifar10/model_last.pth.tar', print_freq=10, queue_len=1000, save_path='./test_results/alexnet/100eps/', seed=None, sgd=True, subset=0, subset_file=None, tau=0.1, use_bn=True, **{'cls-size': 10, 'hidden-dim': 4096})
+=> creating model 'alexnet'
+Model(
+  (backbone): AlexNet(
+    (features): Sequential(
+      (0): Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+      (1): ReLU(inplace=True)
+      (2): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (3): Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+      (4): ReLU(inplace=True)
+      (5): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (6): Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (7): ReLU(inplace=True)
+      (8): Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (9): ReLU(inplace=True)
+      (10): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (11): ReLU(inplace=True)
+      (12): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(6, 6))
+    (classifier): Sequential(
+      (0): Dropout(p=0.5, inplace=False)
+      (1): Linear(in_features=9216, out_features=4096, bias=True)
+      (2): ReLU(inplace=True)
+      (3): Dropout(p=0.5, inplace=False)
+      (4): Linear(in_features=4096, out_features=4096, bias=True)
+      (5): ReLU(inplace=True)
+      (6): Linear(in_features=4096, out_features=1000, bias=True)
+    )
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Sequential(
+      (0): Linear(in_features=1000, out_features=4096, bias=True)
+      (1): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): LeakyReLU(negative_slope=0.01)
+      (3): Linear(in_features=4096, out_features=4096, bias=True)
+      (4): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (5): LeakyReLU(negative_slope=0.01)
+      (6): Linear(in_features=4096, out_features=128, bias=True)
+    )
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar'
+=> loaded pre-trained model './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar' (epoch 100)
+=> using 1 GPUs.
+Test: [  0/313]	Time  2.211 ( 2.211)
+Test: [ 10/313]	Time  0.083 ( 0.283)
+Test: [ 20/313]	Time  0.086 ( 0.187)
+Test: [ 30/313]	Time  0.082 ( 0.155)
+Test: [ 40/313]	Time  0.081 ( 0.139)
+Test: [ 50/313]	Time  0.089 ( 0.128)
+Test: [ 60/313]	Time  0.090 ( 0.123)
+Test: [ 70/313]	Time  0.084 ( 0.118)
+Test: [ 80/313]	Time  0.082 ( 0.114)
+Test: [ 90/313]	Time  0.083 ( 0.110)
+Test: [100/313]	Time  0.096 ( 0.108)
+Test: [110/313]	Time  0.081 ( 0.106)
+Test: [120/313]	Time  0.082 ( 0.105)
+Test: [130/313]	Time  0.084 ( 0.103)
+Test: [140/313]	Time  0.082 ( 0.102)
+Test: [150/313]	Time  0.101 ( 0.101)
+Test: [160/313]	Time  0.082 ( 0.100)
+Test: [170/313]	Time  0.081 ( 0.099)
+Test: [180/313]	Time  0.081 ( 0.098)
+Test: [190/313]	Time  0.090 ( 0.098)
+Test: [200/313]	Time  0.082 ( 0.097)
+Test: [210/313]	Time  0.081 ( 0.096)
+Test: [220/313]	Time  0.083 ( 0.096)
+Test: [230/313]	Time  0.096 ( 0.095)
+Test: [240/313]	Time  0.082 ( 0.095)
+Test: [250/313]	Time  0.081 ( 0.095)
+Test: [260/313]	Time  0.085 ( 0.094)
+Test: [270/313]	Time  0.083 ( 0.094)
+Test: [280/313]	Time  0.085 ( 0.094)
+Test: [290/313]	Time  0.084 ( 0.093)
+Test: [300/313]	Time  0.085 ( 0.093)
+Test: [310/313]	Time  0.103 ( 0.093)
+=> number of samples: 10000
+=> number of unique assignments: 10
+=> NMI: 41.944%
+=> Adjusted NMI: 41.842%
+=> Adjusted Rand-Index: 28.445%
+=> Accuracy: 46.530%
+=> saved grid_0.pdf, accuracy = 0.741, nsamples = 679
+=> grid 0 labels: [4 6 6 4]
+=> saved grid_1.pdf, accuracy = 0.662, nsamples = 710
+=> grid 1 labels: [0 0 0 0]
+=> saved grid_2.pdf, accuracy = 0.657, nsamples = 1293
+=> grid 2 labels: [8 8 8 0]
+=> saved grid_3.pdf, accuracy = 0.650, nsamples = 955
+=> grid 3 labels: [7 7 2 7]
+=> saved grid_4.pdf, accuracy = 0.488, nsamples = 887
+=> grid 4 labels: [0 1 9 9]
+=> saved grid_5.pdf, accuracy = 0.469, nsamples = 1172
+=> grid 5 labels: [9 9 8 1]
+=> saved grid_6.pdf, accuracy = 0.348, nsamples = 1035
+=> grid 6 labels: [4 3 6 3]
+=> saved grid_7.pdf, accuracy = 0.285, nsamples = 1003
+=> grid 7 labels: [7 5 3 3]
+=> saved grid_8.pdf, accuracy = 0.270, nsamples = 1203
+=> grid 8 labels: [3 4 5 2]
+=> saved grid_9.pdf, accuracy = 0.241, nsamples = 1063
+=> grid 9 labels: [2 6 5 4]
+Namespace(activation='leaky_relu', arch='alexnet', batch_size=32, cls_num=0, cls_size=10, config='configs/test_config.yaml', cos=True, data='cifar10/cifar10', dim=128, final_lr=0.0048, gpu=0, hidden_dim=4096, kmeans_cls=None, lars=True, lr=4.8, model='self-classifier', num_classes=10, num_hidden=2, num_samples_per_class=9, pretrained='./saved/cifar10/alexnet/full-cifar10/model_last.pth.tar', print_freq=10, queue_len=1000, save_path='./test_results/alexnet/100eps/', seed=None, sgd=True, subset=0, subset_file=None, tau=0.1, use_bn=True, **{'cls-size': 10, 'hidden-dim': 4096})
+=> creating model 'alexnet'
+Model(
+  (backbone): AlexNet(
+    (features): Sequential(
+      (0): Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+      (1): ReLU(inplace=True)
+      (2): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (3): Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+      (4): ReLU(inplace=True)
+      (5): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (6): Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (7): ReLU(inplace=True)
+      (8): Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (9): ReLU(inplace=True)
+      (10): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (11): ReLU(inplace=True)
+      (12): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(6, 6))
+    (classifier): Sequential(
+      (0): Dropout(p=0.5, inplace=False)
+      (1): Linear(in_features=9216, out_features=4096, bias=True)
+      (2): ReLU(inplace=True)
+      (3): Dropout(p=0.5, inplace=False)
+      (4): Linear(in_features=4096, out_features=4096, bias=True)
+      (5): ReLU(inplace=True)
+      (6): Linear(in_features=4096, out_features=1000, bias=True)
+    )
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Sequential(
+      (0): Linear(in_features=1000, out_features=4096, bias=True)
+      (1): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): LeakyReLU(negative_slope=0.01)
+      (3): Linear(in_features=4096, out_features=4096, bias=True)
+      (4): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (5): LeakyReLU(negative_slope=0.01)
+      (6): Linear(in_features=4096, out_features=128, bias=True)
+    )
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar'
+=> loaded pre-trained model './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar' (epoch 100)
+=> using 1 GPUs.
+Test: [  0/313]	Time  2.331 ( 2.331)
+Test: [ 10/313]	Time  0.083 ( 0.295)
+Test: [ 20/313]	Time  0.084 ( 0.195)
+Test: [ 30/313]	Time  0.087 ( 0.161)
+Test: [ 40/313]	Time  0.102 ( 0.144)
+Test: [ 50/313]	Time  0.082 ( 0.132)
+Test: [ 60/313]	Time  0.089 ( 0.125)
+Test: [ 70/313]	Time  0.104 ( 0.120)
+Test: [ 80/313]	Time  0.083 ( 0.116)
+Test: [ 90/313]	Time  0.087 ( 0.113)
+Test: [100/313]	Time  0.086 ( 0.110)
+Test: [110/313]	Time  0.086 ( 0.108)
+Test: [120/313]	Time  0.086 ( 0.107)
+Test: [130/313]	Time  0.085 ( 0.105)
+Test: [140/313]	Time  0.083 ( 0.104)
+Test: [150/313]	Time  0.101 ( 0.103)
+Test: [160/313]	Time  0.086 ( 0.102)
+Test: [170/313]	Time  0.084 ( 0.101)
+Test: [180/313]	Time  0.084 ( 0.100)
+Test: [190/313]	Time  0.084 ( 0.099)
+Test: [200/313]	Time  0.083 ( 0.099)
+Test: [210/313]	Time  0.104 ( 0.098)
+Test: [220/313]	Time  0.084 ( 0.098)
+Test: [230/313]	Time  0.111 ( 0.097)
+Test: [240/313]	Time  0.084 ( 0.097)
+Test: [250/313]	Time  0.092 ( 0.097)
+Test: [260/313]	Time  0.085 ( 0.096)
+Test: [270/313]	Time  0.085 ( 0.096)
+Test: [280/313]	Time  0.084 ( 0.096)
+Test: [290/313]	Time  0.082 ( 0.096)
+Test: [300/313]	Time  0.083 ( 0.095)
+Test: [310/313]	Time  0.108 ( 0.095)
+=> number of samples: 10000
+=> number of unique assignments: 10
+=> NMI: 41.946%
+=> Adjusted NMI: 41.843%
+=> Adjusted Rand-Index: 28.447%
+=> Accuracy: 46.530%
+=> saved grid_0.pdf, accuracy = 0.741, nsamples = 679
+=> grid 0 labels: [4 6 6 4 6 6 3 6 6]
+=> saved grid_1.pdf, accuracy = 0.662, nsamples = 710
+=> grid 1 labels: [0 0 0 0 0 1 0 0 0]
+=> saved grid_2.pdf, accuracy = 0.657, nsamples = 1293
+=> grid 2 labels: [8 8 8 0 8 0 8 8 8]
+=> saved grid_3.pdf, accuracy = 0.650, nsamples = 955
+=> grid 3 labels: [7 7 2 7 2 7 4 4 4]
+=> saved grid_4.pdf, accuracy = 0.488, nsamples = 887
+=> grid 4 labels: [0 1 9 9 8 1 9 9 9]
+=> saved grid_5.pdf, accuracy = 0.469, nsamples = 1172
+=> grid 5 labels: [9 9 8 1 1 1 9 9 1]
+=> saved grid_6.pdf, accuracy = 0.348, nsamples = 1035
+=> grid 6 labels: [4 3 6 3 4 5 3 3 3]
+=> saved grid_7.pdf, accuracy = 0.285, nsamples = 1004
+=> grid 7 labels: [7 5 3 3 5 7 0 3 3]
+=> saved grid_8.pdf, accuracy = 0.270, nsamples = 1203
+=> grid 8 labels: [3 4 5 2 3 3 0 5 2]
+=> saved grid_9.pdf, accuracy = 0.241, nsamples = 1062
+=> grid 9 labels: [3 2 5 3 2 5 7 2 5]
+Namespace(activation='leaky_relu', arch='alexnet', batch_size=32, cls_num=0, cls_size=10, config='configs/test_config.yaml', cos=True, data='cifar10/cifar10', dim=128, final_lr=0.0048, gpu=0, hidden_dim=4096, kmeans_cls=None, lars=True, lr=4.8, model='self-classifier', num_classes=10, num_hidden=2, num_samples_per_class=9, pretrained='./saved/cifar10/alexnet/full-cifar10/model_last.pth.tar', print_freq=10, queue_len=1000, save_path='./test_results/alexnet/100eps/', seed=None, sgd=True, subset=0, subset_file=None, tau=0.1, use_bn=True, **{'cls-size': 10, 'hidden-dim': 4096})
+=> creating model 'alexnet'
+Model(
+  (backbone): AlexNet(
+    (features): Sequential(
+      (0): Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+      (1): ReLU(inplace=True)
+      (2): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (3): Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+      (4): ReLU(inplace=True)
+      (5): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (6): Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (7): ReLU(inplace=True)
+      (8): Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (9): ReLU(inplace=True)
+      (10): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (11): ReLU(inplace=True)
+      (12): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(6, 6))
+    (classifier): Sequential(
+      (0): Dropout(p=0.5, inplace=False)
+      (1): Linear(in_features=9216, out_features=4096, bias=True)
+      (2): ReLU(inplace=True)
+      (3): Dropout(p=0.5, inplace=False)
+      (4): Linear(in_features=4096, out_features=4096, bias=True)
+      (5): ReLU(inplace=True)
+      (6): Linear(in_features=4096, out_features=1000, bias=True)
+    )
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Sequential(
+      (0): Linear(in_features=1000, out_features=4096, bias=True)
+      (1): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): LeakyReLU(negative_slope=0.01)
+      (3): Linear(in_features=4096, out_features=4096, bias=True)
+      (4): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (5): LeakyReLU(negative_slope=0.01)
+      (6): Linear(in_features=4096, out_features=128, bias=True)
+    )
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar'
+=> loaded pre-trained model './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar' (epoch 100)
+=> using 1 GPUs.
+Test: [  0/313]	Time  2.685 ( 2.685)
+Test: [ 10/313]	Time  0.087 ( 0.339)
+Test: [ 20/313]	Time  0.093 ( 0.221)
+Test: [ 30/313]	Time  0.098 ( 0.180)
+Test: [ 40/313]	Time  0.093 ( 0.160)
+Test: [ 50/313]	Time  0.107 ( 0.148)
+Test: [ 60/313]	Time  0.115 ( 0.140)
+Test: [ 70/313]	Time  0.111 ( 0.135)
+Test: [ 80/313]	Time  0.113 ( 0.132)
+Test: [ 90/313]	Time  0.136 ( 0.130)
+Test: [100/313]	Time  0.098 ( 0.128)
+Test: [110/313]	Time  0.107 ( 0.126)
+Test: [120/313]	Time  0.094 ( 0.125)
+Test: [130/313]	Time  0.098 ( 0.123)
+Test: [140/313]	Time  0.124 ( 0.122)
+Test: [150/313]	Time  0.098 ( 0.121)
+Test: [160/313]	Time  0.100 ( 0.120)
+Test: [170/313]	Time  0.093 ( 0.119)
+Test: [180/313]	Time  0.095 ( 0.118)
+Test: [190/313]	Time  0.112 ( 0.117)
+Test: [200/313]	Time  0.100 ( 0.117)
+Test: [210/313]	Time  0.106 ( 0.116)
+Test: [220/313]	Time  0.113 ( 0.115)
+Test: [230/313]	Time  0.110 ( 0.115)
+Test: [240/313]	Time  0.111 ( 0.115)
+Test: [250/313]	Time  0.112 ( 0.115)
+Test: [260/313]	Time  0.109 ( 0.115)
+Test: [270/313]	Time  0.097 ( 0.114)
+Test: [280/313]	Time  0.104 ( 0.114)
+Test: [290/313]	Time  0.105 ( 0.114)
+Test: [300/313]	Time  0.101 ( 0.113)
+Test: [310/313]	Time  0.099 ( 0.113)
+=> number of samples: 10000
+=> number of unique assignments: 10
+=> NMI: 41.946%
+=> Adjusted NMI: 41.843%
+=> Adjusted Rand-Index: 28.447%
+=> Accuracy: 46.530%
+=> saved grid_0.pdf, accuracy = 0.741, nsamples = 679
+=> grid 0 labels: [4 6 6 4 6 6 3 6 6]
+=> saved grid_1.pdf, accuracy = 0.662, nsamples = 710
+=> grid 1 labels: [0 0 0 0 0 1 0 0 0]
+=> saved grid_2.pdf, accuracy = 0.657, nsamples = 1293
+=> grid 2 labels: [8 8 8 0 8 0 8 8 8]
+=> saved grid_3.pdf, accuracy = 0.650, nsamples = 955
+=> grid 3 labels: [7 7 2 7 2 7 4 4 4]
+=> saved grid_4.pdf, accuracy = 0.488, nsamples = 887
+=> grid 4 labels: [0 1 9 9 8 1 9 9 9]
+=> saved grid_5.pdf, accuracy = 0.469, nsamples = 1172
+=> grid 5 labels: [9 9 8 1 1 1 9 9 1]
+=> saved grid_6.pdf, accuracy = 0.348, nsamples = 1035
+=> grid 6 labels: [4 3 6 3 4 5 3 3 3]
+=> saved grid_7.pdf, accuracy = 0.285, nsamples = 1004
+=> grid 7 labels: [7 5 3 3 5 7 0 3 3]
+=> saved grid_8.pdf, accuracy = 0.270, nsamples = 1203
+=> grid 8 labels: [3 4 5 2 3 3 0 5 2]
+=> saved grid_9.pdf, accuracy = 0.241, nsamples = 1062
+=> grid 9 labels: [3 2 5 3 2 5 7 2 5]
+Namespace(activation='leaky_relu', arch='alexnet', batch_size=32, cls_num=0, cls_size=10, config='configs/test_config.yaml', cos=True, data='cifar10/cifar10', dim=128, final_lr=0.0048, gpu=0, hidden_dim=4096, kmeans_cls=None, lars=True, lr=4.8, model='self-classifier', num_classes=10, num_hidden=2, num_samples_per_class=9, pretrained='./saved/cifar10/alexnet/full-cifar10/model_last.pth.tar', print_freq=10, queue_len=1000, save_path='./test_results/alexnet/100eps/', seed=None, sgd=True, subset=0, subset_file=None, tau=0.1, use_bn=True, **{'cls-size': 10, 'hidden-dim': 4096})
+=> creating model 'alexnet'
+Model(
+  (backbone): AlexNet(
+    (features): Sequential(
+      (0): Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+      (1): ReLU(inplace=True)
+      (2): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (3): Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+      (4): ReLU(inplace=True)
+      (5): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (6): Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (7): ReLU(inplace=True)
+      (8): Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (9): ReLU(inplace=True)
+      (10): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (11): ReLU(inplace=True)
+      (12): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(6, 6))
+    (classifier): Sequential(
+      (0): Dropout(p=0.5, inplace=False)
+      (1): Linear(in_features=9216, out_features=4096, bias=True)
+      (2): ReLU(inplace=True)
+      (3): Dropout(p=0.5, inplace=False)
+      (4): Linear(in_features=4096, out_features=4096, bias=True)
+      (5): ReLU(inplace=True)
+      (6): Linear(in_features=4096, out_features=1000, bias=True)
+    )
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Sequential(
+      (0): Linear(in_features=512, out_features=4096, bias=True)
+      (1): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): LeakyReLU(negative_slope=0.01)
+      (3): Linear(in_features=4096, out_features=4096, bias=True)
+      (4): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (5): LeakyReLU(negative_slope=0.01)
+      (6): Linear(in_features=4096, out_features=128, bias=True)
+    )
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar'
+Namespace(activation='leaky_relu', arch='alexnet', batch_size=32, cls_num=0, cls_size=10, config='configs/test_config.yaml', cos=True, data='cifar10/cifar10', dim=128, final_lr=0.0048, gpu=0, hidden_dim=4096, kmeans_cls=None, lars=True, lr=4.8, model='self-classifier', num_classes=10, num_hidden=2, num_samples_per_class=9, pretrained='./saved/cifar10/alexnet/full-cifar10/model_last.pth.tar', print_freq=10, queue_len=1000, save_path='./test_results/alexnet/100eps/', seed=None, sgd=True, subset=0, subset_file=None, tau=0.1, use_bn=True, **{'cls-size': 10, 'hidden-dim': 4096})
+=> creating model 'alexnet'
+Model(
+  (backbone): AlexNet(
+    (features): Sequential(
+      (0): Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+      (1): ReLU(inplace=True)
+      (2): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (3): Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+      (4): ReLU(inplace=True)
+      (5): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (6): Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (7): ReLU(inplace=True)
+      (8): Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (9): ReLU(inplace=True)
+      (10): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (11): ReLU(inplace=True)
+      (12): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(6, 6))
+    (classifier): Sequential(
+      (0): Dropout(p=0.5, inplace=False)
+      (1): Linear(in_features=9216, out_features=4096, bias=True)
+      (2): ReLU(inplace=True)
+      (3): Dropout(p=0.5, inplace=False)
+      (4): Linear(in_features=4096, out_features=4096, bias=True)
+      (5): ReLU(inplace=True)
+      (6): Linear(in_features=4096, out_features=1000, bias=True)
+    )
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Sequential(
+      (0): Linear(in_features=1000, out_features=4096, bias=True)
+      (1): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): LeakyReLU(negative_slope=0.01)
+      (3): Linear(in_features=4096, out_features=4096, bias=True)
+      (4): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (5): LeakyReLU(negative_slope=0.01)
+      (6): Linear(in_features=4096, out_features=128, bias=True)
+    )
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar'
+=> loaded pre-trained model './saved/cifar10/alexnet/full-cifar10/model_last.pth.tar' (epoch 100)
+=> using 1 GPUs.
+Test: [  0/313]	Time  1.691 ( 1.691)
+Test: [ 10/313]	Time  0.059 ( 0.211)
+Test: [ 20/313]	Time  0.062 ( 0.140)
+Test: [ 30/313]	Time  0.063 ( 0.114)
+Test: [ 40/313]	Time  0.092 ( 0.106)
+Test: [ 50/313]	Time  0.068 ( 0.100)
+Test: [ 60/313]	Time  0.069 ( 0.095)
+Test: [ 70/313]	Time  0.068 ( 0.092)
+Test: [ 80/313]	Time  0.068 ( 0.089)
+Test: [ 90/313]	Time  0.070 ( 0.086)
+Test: [100/313]	Time  0.067 ( 0.085)
+Test: [110/313]	Time  0.067 ( 0.083)
+Test: [120/313]	Time  0.068 ( 0.082)
+Test: [130/313]	Time  0.067 ( 0.081)
+Test: [140/313]	Time  0.066 ( 0.080)
+Test: [150/313]	Time  0.063 ( 0.079)
+Test: [160/313]	Time  0.067 ( 0.078)
+Test: [170/313]	Time  0.064 ( 0.077)
+Test: [180/313]	Time  0.066 ( 0.077)
+Test: [190/313]	Time  0.064 ( 0.076)
+Test: [200/313]	Time  0.065 ( 0.075)
+Test: [210/313]	Time  0.065 ( 0.075)
+Test: [220/313]	Time  0.063 ( 0.074)
+Test: [230/313]	Time  0.073 ( 0.074)
+Test: [240/313]	Time  0.064 ( 0.074)
+Test: [250/313]	Time  0.064 ( 0.073)
+Test: [260/313]	Time  0.065 ( 0.073)
+Test: [270/313]	Time  0.064 ( 0.073)
+Test: [280/313]	Time  0.063 ( 0.072)
+Test: [290/313]	Time  0.063 ( 0.072)
+Test: [300/313]	Time  0.064 ( 0.072)
+Test: [310/313]	Time  0.064 ( 0.072)
+=> number of samples: 10000
+=> number of unique assignments: 10
+=> NMI: 41.946%
+=> Adjusted NMI: 41.843%
+=> Adjusted Rand-Index: 28.447%
+=> Accuracy: 46.530%
+=> saved grid_0.pdf, accuracy = 0.741, nsamples = 679
+=> grid 0 labels: [4 6 6 4 6 6 3 6 6]
+=> saved grid_1.pdf, accuracy = 0.662, nsamples = 710
+=> grid 1 labels: [0 0 0 0 0 1 0 0 0]
+=> saved grid_2.pdf, accuracy = 0.657, nsamples = 1293
+=> grid 2 labels: [8 8 8 0 8 0 8 8 8]
+=> saved grid_3.pdf, accuracy = 0.650, nsamples = 955
+=> grid 3 labels: [7 7 2 7 2 7 4 4 4]
+=> saved grid_4.pdf, accuracy = 0.488, nsamples = 887
+=> grid 4 labels: [0 1 9 9 8 1 9 9 9]
+=> saved grid_5.pdf, accuracy = 0.469, nsamples = 1172
+=> grid 5 labels: [9 9 8 1 1 1 9 9 1]
+=> saved grid_6.pdf, accuracy = 0.348, nsamples = 1035
+=> grid 6 labels: [4 3 6 3 4 5 3 3 3]
+=> saved grid_7.pdf, accuracy = 0.285, nsamples = 1004
+=> grid 7 labels: [7 5 3 3 5 7 0 3 3]
+=> saved grid_8.pdf, accuracy = 0.270, nsamples = 1203
+=> grid 8 labels: [3 4 5 2 3 3 0 5 2]
+=> saved grid_9.pdf, accuracy = 0.241, nsamples = 1062
+=> grid 9 labels: [3 2 5 3 2 5 7 2 5]
+Namespace(activation='leaky_relu', arch='alexnet', batch_size=32, cls_num=0, cls_size=10, config='configs/test_config.yaml', cos=True, data='cifar10/cifar10', dim=128, final_lr=0.0048, gpu=0, hidden_dim=4096, kmeans_cls=None, lars=True, lr=4.8, model='self-classifier', num_classes=10, num_hidden=2, num_samples_per_class=9, pretrained='./saved/cifar10/alexnet/full-cifar10/from_150eps/model_best.pth.tar', print_freq=10, queue_len=1000, save_path='./test_results/alexnet/100eps/', seed=None, sgd=True, subset=0, subset_file=None, tau=0.1, use_bn=True, **{'cls-size': 10, 'hidden-dim': 4096})
+=> creating model 'alexnet'
+Model(
+  (backbone): AlexNet(
+    (features): Sequential(
+      (0): Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+      (1): ReLU(inplace=True)
+      (2): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (3): Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+      (4): ReLU(inplace=True)
+      (5): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (6): Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (7): ReLU(inplace=True)
+      (8): Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (9): ReLU(inplace=True)
+      (10): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (11): ReLU(inplace=True)
+      (12): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(6, 6))
+    (classifier): Sequential(
+      (0): Dropout(p=0.5, inplace=False)
+      (1): Linear(in_features=9216, out_features=4096, bias=True)
+      (2): ReLU(inplace=True)
+      (3): Dropout(p=0.5, inplace=False)
+      (4): Linear(in_features=4096, out_features=4096, bias=True)
+      (5): ReLU(inplace=True)
+      (6): Linear(in_features=4096, out_features=1000, bias=True)
+    )
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Sequential(
+      (0): Linear(in_features=1000, out_features=4096, bias=True)
+      (1): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): LeakyReLU(negative_slope=0.01)
+      (3): Linear(in_features=4096, out_features=4096, bias=True)
+      (4): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (5): LeakyReLU(negative_slope=0.01)
+      (6): Linear(in_features=4096, out_features=128, bias=True)
+    )
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint './saved/cifar10/alexnet/full-cifar10/from_150eps/model_best.pth.tar'
+=> loaded pre-trained model './saved/cifar10/alexnet/full-cifar10/from_150eps/model_best.pth.tar' (epoch 250)
+=> using 1 GPUs.
+Test: [  0/313]	Time  1.681 ( 1.681)
+Test: [ 10/313]	Time  0.066 ( 0.216)
+Test: [ 20/313]	Time  0.066 ( 0.144)
+Test: [ 30/313]	Time  0.067 ( 0.119)
+Test: [ 40/313]	Time  0.072 ( 0.107)
+Test: [ 50/313]	Time  0.073 ( 0.100)
+Test: [ 60/313]	Time  0.069 ( 0.095)
+Test: [ 70/313]	Time  0.068 ( 0.091)
+Test: [ 80/313]	Time  0.068 ( 0.088)
+Test: [ 90/313]	Time  0.065 ( 0.086)
+Test: [100/313]	Time  0.066 ( 0.084)
+Test: [110/313]	Time  0.066 ( 0.082)
+Test: [120/313]	Time  0.065 ( 0.081)
+Test: [130/313]	Time  0.066 ( 0.080)
+Test: [140/313]	Time  0.067 ( 0.079)
+Test: [150/313]	Time  0.064 ( 0.078)
+Test: [160/313]	Time  0.067 ( 0.077)
+Test: [170/313]	Time  0.069 ( 0.077)
+Test: [180/313]	Time  0.067 ( 0.076)
+Test: [190/313]	Time  0.067 ( 0.076)
+Test: [200/313]	Time  0.091 ( 0.076)
+Test: [210/313]	Time  0.066 ( 0.076)
+Test: [220/313]	Time  0.066 ( 0.076)
+Test: [230/313]	Time  0.066 ( 0.075)
+Test: [240/313]	Time  0.066 ( 0.075)
+Test: [250/313]	Time  0.066 ( 0.075)
+Test: [260/313]	Time  0.066 ( 0.074)
+Test: [270/313]	Time  0.067 ( 0.074)
+Test: [280/313]	Time  0.066 ( 0.074)
+Test: [290/313]	Time  0.067 ( 0.073)
+Test: [300/313]	Time  0.069 ( 0.073)
+Test: [310/313]	Time  0.068 ( 0.073)
+=> number of samples: 10000
+=> number of unique assignments: 10
+=> NMI: 48.768%
+=> Adjusted NMI: 48.677%
+=> Adjusted Rand-Index: 34.734%
+=> Accuracy: 52.020%
+=> saved grid_0.pdf, accuracy = 0.827, nsamples = 770
+=> grid 0 labels: [6 4 4 2 6 3 6 6 6]
+=> saved grid_1.pdf, accuracy = 0.752, nsamples = 890
+=> grid 1 labels: [7 7 7 2 7 7 7 7 7]
+=> saved grid_2.pdf, accuracy = 0.688, nsamples = 1284
+=> grid 2 labels: [8 8 8 0 8 8 8 8 8]
+=> saved grid_3.pdf, accuracy = 0.659, nsamples = 848
+=> grid 3 labels: [4 4 4 3 4 2 4 4 4]
+=> saved grid_4.pdf, accuracy = 0.623, nsamples = 853
+=> grid 4 labels: [2 0 4 2 2 2 0 0 2]
+=> saved grid_5.pdf, accuracy = 0.516, nsamples = 869
+=> grid 5 labels: [1 9 1 1 9 9 1 9 9]
+=> saved grid_6.pdf, accuracy = 0.502, nsamples = 1138
+=> grid 6 labels: [9 9 9 1 9 9 9 9 9]
+=> saved grid_7.pdf, accuracy = 0.344, nsamples = 1377
+=> grid 7 labels: [5 4 3 0 2 2 2 5 3]
+=> saved grid_8.pdf, accuracy = 0.267, nsamples = 1002
+=> grid 8 labels: [5 5 3 3 7 5 0 3 3]
+=> saved grid_9.pdf, accuracy = 0.166, nsamples = 969
+=> grid 9 labels: [7 3 2 5 4 6 5 6 3]
+Namespace(activation='leaky_relu', arch='alexnet', batch_size=32, cls_num=0, cls_size=10, config='configs/test_config.yaml', cos=True, data='cifar10/cifar10', dim=128, final_lr=0.0048, gpu=0, hidden_dim=4096, kmeans_cls=None, lars=True, lr=4.8, model='self-classifier', num_classes=10, num_hidden=2, num_samples_per_class=9, pretrained='./saved/cifar10/alexnet/full-cifar10/model_best.pth.tar', print_freq=10, queue_len=1000, save_path='./test_results/alexnet/100eps/', seed=None, sgd=True, subset=0, subset_file=None, tau=0.1, use_bn=True, **{'cls-size': 10, 'hidden-dim': 4096})
+=> creating model 'alexnet'
+Model(
+  (backbone): AlexNet(
+    (features): Sequential(
+      (0): Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+      (1): ReLU(inplace=True)
+      (2): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (3): Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+      (4): ReLU(inplace=True)
+      (5): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (6): Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (7): ReLU(inplace=True)
+      (8): Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (9): ReLU(inplace=True)
+      (10): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (11): ReLU(inplace=True)
+      (12): MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (avgpool): AdaptiveAvgPool2d(output_size=(6, 6))
+    (classifier): Sequential(
+      (0): Dropout(p=0.5, inplace=False)
+      (1): Linear(in_features=9216, out_features=4096, bias=True)
+      (2): ReLU(inplace=True)
+      (3): Dropout(p=0.5, inplace=False)
+      (4): Linear(in_features=4096, out_features=4096, bias=True)
+      (5): ReLU(inplace=True)
+      (6): Linear(in_features=4096, out_features=1000, bias=True)
+    )
+    (fc): Identity()
+  )
+  (classifier_head): MLPhead(
+    (mlp): Sequential(
+      (0): Linear(in_features=1000, out_features=4096, bias=True)
+      (1): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): LeakyReLU(negative_slope=0.01)
+      (3): Linear(in_features=4096, out_features=4096, bias=True)
+      (4): BatchNorm1d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (5): LeakyReLU(negative_slope=0.01)
+      (6): Linear(in_features=4096, out_features=128, bias=True)
+    )
+  )
+  (classifier_final): Linear(in_features=128, out_features=10, bias=False)
+)
+=> loading checkpoint './saved/cifar10/alexnet/full-cifar10/model_best.pth.tar'
+=> loaded pre-trained model './saved/cifar10/alexnet/full-cifar10/model_best.pth.tar' (epoch 99)
+=> using 1 GPUs.
+Test: [  0/313]	Time  1.612 ( 1.612)
+Test: [ 10/313]	Time  0.073 ( 0.208)
+Test: [ 20/313]	Time  0.062 ( 0.139)
+Test: [ 30/313]	Time  0.065 ( 0.115)
+Test: [ 40/313]	Time  0.066 ( 0.103)
+Test: [ 50/313]	Time  0.066 ( 0.096)
+Test: [ 60/313]	Time  0.067 ( 0.091)
+Test: [ 70/313]	Time  0.066 ( 0.088)
+Test: [ 80/313]	Time  0.066 ( 0.085)
+Test: [ 90/313]	Time  0.067 ( 0.083)
+Test: [100/313]	Time  0.066 ( 0.082)
+Test: [110/313]	Time  0.065 ( 0.080)
+Test: [120/313]	Time  0.065 ( 0.079)
+Test: [130/313]	Time  0.065 ( 0.078)
+Test: [140/313]	Time  0.065 ( 0.077)
+Test: [150/313]	Time  0.065 ( 0.076)
+Test: [160/313]	Time  0.066 ( 0.076)
+Test: [170/313]	Time  0.067 ( 0.075)
+Test: [180/313]	Time  0.093 ( 0.075)
+Test: [190/313]	Time  0.066 ( 0.076)
+Test: [200/313]	Time  0.066 ( 0.075)
+Test: [210/313]	Time  0.065 ( 0.075)
+Test: [220/313]	Time  0.065 ( 0.074)
+Test: [230/313]	Time  0.065 ( 0.074)
+Test: [240/313]	Time  0.066 ( 0.074)
+Test: [250/313]	Time  0.066 ( 0.073)
+Test: [260/313]	Time  0.068 ( 0.073)
+Test: [270/313]	Time  0.071 ( 0.073)
+Test: [280/313]	Time  0.071 ( 0.073)
+Test: [290/313]	Time  0.068 ( 0.073)
+Test: [300/313]	Time  0.068 ( 0.073)
+Test: [310/313]	Time  0.065 ( 0.073)
+=> number of samples: 10000
+=> number of unique assignments: 10
+=> NMI: 41.736%
+=> Adjusted NMI: 41.632%
+=> Adjusted Rand-Index: 28.178%
+=> Accuracy: 46.140%
+=> saved grid_0.pdf, accuracy = 0.772, nsamples = 609
+=> grid 0 labels: [6 3 6 6 3 3 6 6 6]
+=> saved grid_1.pdf, accuracy = 0.655, nsamples = 1292
+=> grid 1 labels: [8 8 0 0 0 0 8 8 8]
+=> saved grid_2.pdf, accuracy = 0.649, nsamples = 945
+=> grid 2 labels: [7 7 7 2 4 4 7 7 7]
+=> saved grid_3.pdf, accuracy = 0.641, nsamples = 733
+=> grid 3 labels: [0 0 0 0 0 0 0 8 0]
+=> saved grid_4.pdf, accuracy = 0.474, nsamples = 944
+=> grid 4 labels: [9 9 9 0 1 1 9 9 9]
+=> saved grid_5.pdf, accuracy = 0.459, nsamples = 1164
+=> grid 5 labels: [9 7 1 9 9 9 1 1 7]
+=> saved grid_6.pdf, accuracy = 0.363, nsamples = 980
+=> grid 6 labels: [4 4 4 4 4 6 6 5 6]
+=> saved grid_7.pdf, accuracy = 0.287, nsamples = 1093
+=> grid 7 labels: [5 5 5 7 4 0 2 3 3]
+=> saved grid_8.pdf, accuracy = 0.272, nsamples = 1138
+=> grid 8 labels: [4 6 6 3 9 6 4 6 7]
+=> saved grid_9.pdf, accuracy = 0.231, nsamples = 1102
+=> grid 9 labels: [5 5 3 3 6 3 6 3 5]

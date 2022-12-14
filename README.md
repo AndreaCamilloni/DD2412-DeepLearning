@@ -2,6 +2,8 @@
 
 ## Self-Classifier: Self-Supervised Classification Network
 
+[Report](https://github.com/AndreaCamilloni/DD2412-DeepLearning/blob/main/An_analysis_of_Self_Supervised_classification_Network.pdf)
+
 Re-implementation of the paper [Self-Supervised Classification Network](https://arxiv.org/abs/2103.10994) from ECCV 2022.
 
 

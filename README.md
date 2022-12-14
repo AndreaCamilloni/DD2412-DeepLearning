@@ -5,7 +5,7 @@ Re-implementation of the paper [Self-Supervised Classification Network](https://
 
 
 <p align="center">
-<img src="https://github.com/elad-amrani/self-classifier/tree/39351384277d4541a0b7525a66770cacdd8f12c3/graphics/Self-Classifier_arch.jpg" width="65%">
+<img src="Self-Classifier_arch.jpg" width="65%">
 </p>
 
 Self-Classifier architecture. Two augmented views of the same image are processed by a shared network comprised of a backbone (e.g. CNN) and a classifier (e.g. projection MLP + linear classification head). The cross-entropy of the two views is minimized to promote same class prediction while avoiding degenerate solutions by asserting a uniform prior on class predictions. The resulting model learns representations and discovers the underlying classes in a single-stage end-to-end unsupervised manner.

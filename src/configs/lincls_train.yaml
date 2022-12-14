@@ -10,6 +10,6 @@ lars: True
 lr: 0.8 
 wd: 0.0 
 save_path: ../lincls_exp1/ 
-wandb: supervisedclassification
-wandb_entity: andreacamilloni #Put your team name or your username
+# wandb: supervisedclassification
+# wandb_entity: andreacamilloni #Put your team name or your username
 num_classes: 10 #this should be defined for updating last layer output features of architecture

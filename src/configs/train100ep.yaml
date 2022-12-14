@@ -7,16 +7,16 @@ epochs: 100
 batch_size: 64
 subset: 0
 gpu: 0
-use_bn: True
+use_bn: True # this only for num_hidden>1
 sgd: True
 lars: True
-activation: leaky_relu
+activation: leaky_relu # this only for num_hidden>1
 cos: True
 final_lr: 0.0048
 lr: 4.8
 queue_len: 1000
-wandb: cifar10
-wandb_entity: andreacamilloni #Put your team name or your username
-dim: 128
-num_hidden: 2
-hidden_dim: 4096
+#wandb: cifar10
+#wandb_entity: andreacamilloni #Put your team name or your username
+dim: 128 
+num_hidden: 1
+hidden_dim: 4096 # this only for num_hidden>1

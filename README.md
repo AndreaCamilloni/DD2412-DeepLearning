@@ -1,6 +1,8 @@
 # DD2412 - Deep Learning, Advance Course
 
 ## Self-Classifier: Self-Supervised Classification Network
+
+Our report can be found in [An_analysis_of]
 Re-implementation of the paper [Self-Supervised Classification Network](https://arxiv.org/abs/2103.10994) from ECCV 2022.
 
 
